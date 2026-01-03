@@ -3,33 +3,73 @@
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Github, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const searchParams = useSearchParams();
 
   const supabase = createClient();
+
+  // Check for error from callback
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+      addDebug(`Error from callback: ${errorParam}`);
+    }
+  }, [searchParams]);
+
+  // Check current session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      addDebug('Checking current session...');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        addDebug(`Session check error: ${error.message}`);
+      } else if (session) {
+        addDebug(`Active session found for: ${session.user.email}`);
+        addDebug(`Session expires: ${new Date(session.expires_at! * 1000).toISOString()}`);
+      } else {
+        addDebug('No active session');
+      }
+    };
+    checkSession();
+  }, [supabase.auth]);
+
+  const addDebug = (msg: string) => {
+    console.log(`[LOGIN] ${msg}`);
+    setDebugInfo(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${msg}`]);
+  };
 
   const handleGitHubLogin = async () => {
     setIsLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    addDebug(`Starting GitHub OAuth, redirectTo: ${redirectTo}`);
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
       },
     });
 
     if (error) {
+      addDebug(`OAuth error: ${error.message}`);
       setError(error.message);
       setIsLoading(false);
+    } else {
+      addDebug(`OAuth initiated, redirecting to: ${data.url}`);
     }
   };
 
@@ -148,7 +188,37 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
+
+        {/* Debug Panel */}
+        <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 text-xs font-mono">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-zinc-400">Debug Log</span>
+            <button
+              onClick={() => setDebugInfo([])}
+              className="text-zinc-500 hover:text-zinc-300"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-auto">
+            {debugInfo.length === 0 ? (
+              <p className="text-zinc-600">No logs yet...</p>
+            ) : (
+              debugInfo.map((log, i) => (
+                <p key={i} className="text-green-400">{log}</p>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
