@@ -8,15 +8,18 @@ export function useOperations(workspaceId: string | undefined) {
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ['operations', workspaceId],
+    queryKey: ['operations', workspaceId, 'v2'],
     queryFn: async () => {
       if (!workspaceId) return [];
 
+      // Fetch all operations (Supabase default limit is 1000)
+      // Use a high limit to get all - for very large datasets, implement pagination
       const { data, error } = await supabase
         .from('operations')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('workspace_id', workspaceId)
-        .order('synced_at', { ascending: true });
+        .order('synced_at', { ascending: true })
+        .limit(10000);
 
       if (error) throw error;
       return (data || []) as unknown as OperationRow[];

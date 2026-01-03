@@ -2,29 +2,37 @@ import Link from 'next/link';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { OperationRow, CapturePayload, CommitPayload, ClaimPayload, ReleasePayload, ClosePayload, AnnotatePayload } from '@/lib/mentu/types';
-import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare } from 'lucide-react';
+import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, Send, ThumbsUp, RotateCcw, Upload, LucideIcon } from 'lucide-react';
 
 interface ActivityFeedProps {
   operations: OperationRow[];
   workspaceName: string;
 }
 
-const opIcons = {
+const opIcons: Record<string, LucideIcon> = {
   capture: Camera,
   commit: Target,
   claim: Hand,
   release: ArrowRightLeft,
   close: CheckCircle,
   annotate: MessageSquare,
+  submit: Send,
+  approve: ThumbsUp,
+  reopen: RotateCcw,
+  publish: Upload,
 };
 
-const opLabels = {
+const opLabels: Record<string, string> = {
   capture: 'captured a memory',
   commit: 'created a commitment',
   claim: 'claimed a commitment',
   release: 'released a commitment',
   close: 'closed a commitment',
   annotate: 'annotated a record',
+  submit: 'submitted for review',
+  approve: 'approved a submission',
+  reopen: 'reopened a commitment',
+  publish: 'published a document',
 };
 
 function getOpLink(op: OperationRow, workspaceName: string): string {

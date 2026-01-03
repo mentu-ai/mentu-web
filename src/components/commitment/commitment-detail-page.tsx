@@ -9,14 +9,16 @@ import { useRealtimeOperations } from '@/hooks/useRealtime';
 import { getCommitmentTimeline, getExternalRefs } from '@/lib/mentu/state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClaimDialog } from './claim-dialog';
 import { ReleaseDialog } from './release-dialog';
 import { CloseWithEvidenceDialog } from './close-with-evidence-dialog';
 import { AnnotateDialog } from './annotate-dialog';
 import { CommitmentTimeline } from './commitment-timeline';
+import { DiffViewer } from '@/components/diff/DiffViewer';
 import { relativeTime, absoluteTime, getActor } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ExternalLink, Github } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github, GitBranch, Clock } from 'lucide-react';
 
 interface CommitmentDetailPageProps {
   workspaceName: string;
@@ -225,14 +227,37 @@ export function CommitmentDetailPage({
           </Button>
         </div>
 
-        {/* Timeline */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-          <h2 className="font-semibold mb-4">Timeline</h2>
-          <CommitmentTimeline
-            operations={timeline}
-            workspaceName={workspaceName}
-          />
-        </div>
+        {/* Tabbed content: Details, Changes, Timeline */}
+        <Tabs defaultValue="timeline" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="timeline" className="gap-1.5">
+              <Clock className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="changes" className="gap-1.5">
+              <GitBranch className="h-4 w-4" />
+              Changes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="timeline">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+              <CommitmentTimeline
+                operations={timeline}
+                workspaceName={workspaceName}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="changes">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+              <DiffViewer
+                commitmentId={commitmentId}
+                pollingInterval={5000}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialogs */}

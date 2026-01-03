@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { OperationType, OperationRow } from '@/lib/mentu/types';
-import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, Download, Copy } from 'lucide-react';
+import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, Download, Copy, Send, ThumbsUp, RotateCcw, Globe } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface LedgerPageProps {
@@ -28,6 +28,10 @@ const opIcons: Record<OperationType, typeof Camera> = {
   release: ArrowRightLeft,
   close: CheckCircle,
   annotate: MessageSquare,
+  submit: Send,
+  approve: ThumbsUp,
+  reopen: RotateCcw,
+  publish: Globe,
 };
 
 const opColors: Record<OperationType, string> = {
@@ -37,6 +41,10 @@ const opColors: Record<OperationType, string> = {
   release: 'text-zinc-600',
   close: 'text-green-600',
   annotate: 'text-zinc-600',
+  submit: 'text-amber-600',
+  approve: 'text-green-600',
+  reopen: 'text-orange-600',
+  publish: 'text-cyan-600',
 };
 
 export function LedgerPage({
@@ -120,6 +128,10 @@ export function LedgerPage({
             <TabsTrigger value="release">Release</TabsTrigger>
             <TabsTrigger value="close">Close</TabsTrigger>
             <TabsTrigger value="annotate">Annotate</TabsTrigger>
+            <TabsTrigger value="submit">Submit</TabsTrigger>
+            <TabsTrigger value="approve">Approve</TabsTrigger>
+            <TabsTrigger value="reopen">Reopen</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
           </TabsList>
         </Tabs>
 
