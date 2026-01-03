@@ -17,7 +17,9 @@ const badgeVariants = cva(
         // Mentu-specific state badges
         open: 'border-transparent bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300',
         claimed: 'border-transparent bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+        in_review: 'border-transparent bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
         closed: 'border-transparent bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+        reopened: 'border-transparent bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
         stale: 'border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
         // Bridge status badges
         online: 'border-transparent bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',

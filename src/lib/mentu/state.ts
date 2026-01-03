@@ -32,6 +32,17 @@ export function computeCommitmentState(
     } else if (op.op === 'release' && (op.payload as { commitment: string }).commitment === cmtId) {
       state = 'open';
       owner = null;
+    } else if (op.op === 'submit' && (op.payload as { commitment: string }).commitment === cmtId) {
+      state = 'in_review';
+      // owner stays the same during review
+    } else if (op.op === 'approve' && (op.payload as { commitment: string }).commitment === cmtId) {
+      state = 'closed';
+      owner = null;
+      evidence = (op.payload as { evidence?: string }).evidence || null;
+      closed_by = op.actor;
+    } else if (op.op === 'reopen' && (op.payload as { commitment: string }).commitment === cmtId) {
+      state = 'reopened';
+      // owner stays claimed to the original claimant
     } else if (op.op === 'close' && (op.payload as { commitment: string }).commitment === cmtId) {
       state = 'closed';
       owner = null;

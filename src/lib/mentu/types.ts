@@ -1,9 +1,9 @@
 // Mentu Protocol Types for Web Interface
 // Mirrors the CLI types
 
-export type OperationType = 'capture' | 'commit' | 'claim' | 'release' | 'close' | 'annotate';
+export type OperationType = 'capture' | 'commit' | 'claim' | 'release' | 'close' | 'annotate' | 'submit' | 'approve' | 'reopen' | 'publish';
 
-export type CommitmentState = 'open' | 'claimed' | 'closed';
+export type CommitmentState = 'open' | 'claimed' | 'in_review' | 'closed' | 'reopened';
 
 export interface CapturePayload {
   body: string;
