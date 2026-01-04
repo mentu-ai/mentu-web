@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { User } from '@supabase/supabase-js';
 import { useCommitment } from '@/hooks/useCommitments';
 import { useBridgeCommands } from '@/hooks/useBridgeCommands';
 import { getCommitmentTimeline } from '@/lib/mentu/state';
@@ -35,7 +34,6 @@ interface CommitmentPanelProps {
   onClose: () => void;
   workspaceName: string;
   workspaceId: string;
-  user: User;
 }
 
 export function CommitmentPanel({
@@ -43,7 +41,6 @@ export function CommitmentPanel({
   onClose,
   workspaceName,
   workspaceId,
-  // user is available for future use (e.g., action authorization)
 }: CommitmentPanelProps) {
   const [activeTab, setActiveTab] = useState('timeline');
   const [copied, setCopied] = useState(false);

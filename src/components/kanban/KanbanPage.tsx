@@ -1,15 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { Header } from '@/components/layout/header';
 import { useKanbanCommitments } from '@/hooks/useKanbanCommitments';
 import { useRealtimeOperations } from '@/hooks/useRealtime';
 import { useBridgeCommands } from '@/hooks/useBridgeCommands';
 import { KanbanBoard } from './KanbanBoard';
 import { CommitmentPanel } from './CommitmentPanel';
-import { CaptureMemoryDialog } from '@/components/memory/capture-memory-dialog';
-import { CreateCommitmentDialog } from '@/components/commitment/create-commitment-dialog';
 import { CloudTerminal } from '@/components/terminal/CloudTerminal';
 import { Search, X, Bug, RefreshCcw, Terminal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -19,12 +15,9 @@ import { cn } from '@/lib/utils';
 interface KanbanPageProps {
   workspaceName: string;
   workspaceId: string;
-  user: User;
 }
 
-export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps) {
-  const [captureOpen, setCaptureOpen] = useState(false);
-  const [commitOpen, setCommitOpen] = useState(false);
+export function KanbanPage({ workspaceName, workspaceId }: KanbanPageProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDebug, setShowDebug] = useState(false);
@@ -74,12 +67,6 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
 
   return (
     <div className="flex flex-col h-full">
-      <Header
-        user={user}
-        onCaptureMemory={() => setCaptureOpen(true)}
-        onCreateCommitment={() => setCommitOpen(true)}
-      />
-
       <div className="flex-1 flex overflow-hidden">
         {/* Main board area */}
         <div
@@ -207,22 +194,8 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
           onClose={handleClosePanel}
           workspaceName={workspaceName}
           workspaceId={workspaceId}
-          user={user}
         />
       </div>
-
-      <CaptureMemoryDialog
-        open={captureOpen}
-        onOpenChange={setCaptureOpen}
-        workspaceId={workspaceId}
-        user={user}
-      />
-      <CreateCommitmentDialog
-        open={commitOpen}
-        onOpenChange={setCommitOpen}
-        workspaceId={workspaceId}
-        user={user}
-      />
     </div>
   );
 }

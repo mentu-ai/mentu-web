@@ -15,17 +15,12 @@ export default async function KanbanRoute({ params }: KanbanRouteProps) {
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
 
   const { data: workspaceData } = await supabase
     .from('workspaces')
-    .select('*')
+    .select('id')
     .eq('name', workspace)
-    .single() as { data: { id: string; name: string } | null };
+    .single() as { data: { id: string } | null };
 
   if (!workspaceData) {
     redirect('/');
@@ -35,7 +30,6 @@ export default async function KanbanRoute({ params }: KanbanRouteProps) {
     <KanbanPage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

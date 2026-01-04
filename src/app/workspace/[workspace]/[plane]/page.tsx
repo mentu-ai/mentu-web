@@ -22,5 +22,9 @@ export default async function PlanePage({ params }: PlanePageProps) {
   }
 
   const OverviewComponent = overviewComponents[plane];
-  return <OverviewComponent />;
+  return (
+    <div className="p-8 max-w-5xl">
+      <OverviewComponent />
+    </div>
+  );
 }

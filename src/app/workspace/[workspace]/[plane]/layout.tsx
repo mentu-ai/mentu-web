@@ -26,10 +26,8 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
       <TopNav user={user ? { email: user.email } : undefined} />
       <div className="flex flex-1 overflow-hidden">
         <PlaneSidebar />
-        <main className="flex-1 overflow-auto p-8">
-          <div className="max-w-5xl">
-            {children}
-          </div>
+        <main className="flex-1 overflow-auto">
+          {children}
         </main>
       </div>
     </div>
