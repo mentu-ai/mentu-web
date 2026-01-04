@@ -32,6 +32,11 @@ const columnConfig: Record<KanbanColumnType, ColumnConfig> = {
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-50 dark:bg-green-950/30',
   },
+  cancelled: {
+    title: 'Cancelled',
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-50 dark:bg-red-950/30',
+  },
 };
 
 interface KanbanColumnProps {
@@ -39,6 +44,7 @@ interface KanbanColumnProps {
   commitments: Commitment[];
   selectedId: string | null;
   onCardClick: (id: string) => void;
+  runningCommitmentIds?: string[];
 }
 
 export function KanbanColumn({
@@ -46,6 +52,7 @@ export function KanbanColumn({
   commitments,
   selectedId,
   onCardClick,
+  runningCommitmentIds = [],
 }: KanbanColumnProps) {
   const config = columnConfig[column];
 
@@ -75,6 +82,7 @@ export function KanbanColumn({
               key={commitment.id}
               commitment={commitment}
               isSelected={selectedId === commitment.id}
+              isRunning={runningCommitmentIds.includes(commitment.id)}
               onClick={() => onCardClick(commitment.id)}
             />
           ))

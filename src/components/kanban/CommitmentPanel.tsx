@@ -262,6 +262,10 @@ export function CommitmentPanel({
                 <DiffViewer
                   commitmentId={commitment.id}
                   pollingInterval={activeTab === 'changes' ? 5000 : false}
+                  onRevertFile={async (path) => {
+                    // TODO: Implement via API
+                    console.log('Revert file:', path, 'in commitment:', commitment?.id);
+                  }}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

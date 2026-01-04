@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Header } from '@/components/layout/header';
 import { useKanbanCommitments } from '@/hooks/useKanbanCommitments';
 import { useRealtimeOperations } from '@/hooks/useRealtime';
+import { useBridgeCommands } from '@/hooks/useBridgeCommands';
 import { KanbanBoard } from './KanbanBoard';
 import { CommitmentPanel } from './CommitmentPanel';
 import { CaptureMemoryDialog } from '@/components/memory/capture-memory-dialog';
@@ -27,7 +28,17 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
   const [searchQuery, setSearchQuery] = useState('');
 
   const { columns, counts, isLoading } = useKanbanCommitments(workspaceId);
+  const { data: bridgeCommands } = useBridgeCommands(workspaceId);
   useRealtimeOperations(workspaceId);
+
+  // Compute running commitment IDs from bridge commands
+  const runningCommitmentIds = useMemo(() => {
+    if (!bridgeCommands) return [];
+    return bridgeCommands
+      .filter(cmd => cmd.status === 'running' || cmd.status === 'pending')
+      .filter(cmd => cmd.commitment_id)
+      .map(cmd => cmd.commitment_id as string);
+  }, [bridgeCommands]);
 
   // Filter commitments by search query
   const filteredColumns = searchQuery
@@ -42,6 +53,9 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
           c.body.toLowerCase().includes(searchQuery.toLowerCase())
         ),
         done: columns.done.filter((c) =>
+          c.body.toLowerCase().includes(searchQuery.toLowerCase())
+        ),
+        cancelled: columns.cancelled.filter((c) =>
           c.body.toLowerCase().includes(searchQuery.toLowerCase())
         ),
       }
@@ -113,6 +127,7 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
               columns={filteredColumns}
               selectedId={selectedId}
               onCardClick={handleCardClick}
+              runningCommitmentIds={runningCommitmentIds}
             />
           )}
         </div>

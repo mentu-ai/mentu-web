@@ -15,6 +15,7 @@ import {
   Minus,
   RefreshCw,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -146,11 +147,26 @@ function DiffLine({ line }: { line: string }) {
 function FileDiff({
   file,
   defaultExpanded = true,
+  onRevert,
 }: {
   file: DiffFile;
   defaultExpanded?: boolean;
+  onRevert?: (path: string) => void;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const [isReverting, setIsReverting] = useState(false);
+
+  const handleRevert = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onRevert) return;
+
+    setIsReverting(true);
+    try {
+      await onRevert(file.path);
+    } finally {
+      setIsReverting(false);
+    }
+  };
 
   return (
     <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden mb-3">
@@ -177,6 +193,18 @@ function FileDiff({
           )}
         </span>
         <FileChangeBadge kind={file.kind} />
+        {onRevert && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRevert}
+            disabled={isReverting}
+            className="h-6 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+            title="Revert this file"
+          >
+            <Trash2 className={cn('h-3 w-3', isReverting && 'animate-pulse')} />
+          </Button>
+        )}
         <div className="flex items-center gap-2 text-xs ml-2">
           {file.additions > 0 && (
             <span className="text-green-600 dark:text-green-400">+{file.additions}</span>
@@ -274,6 +302,8 @@ export interface DiffViewerProps {
   pollingInterval?: number | false;
   /** Optional CSS class */
   className?: string;
+  /** Callback to revert a single file */
+  onRevertFile?: (path: string) => Promise<void>;
 }
 
 /**
@@ -291,6 +321,7 @@ export function DiffViewer({
   defaultExpanded = true,
   pollingInterval = 5000,
   className,
+  onRevertFile,
 }: DiffViewerProps) {
   const {
     data: diff,
@@ -344,6 +375,10 @@ export function DiffViewer({
             key={file.path}
             file={file}
             defaultExpanded={defaultExpanded && diff.files.length <= 5}
+            onRevert={onRevertFile ? async (path) => {
+              await onRevertFile(path);
+              refetch();
+            } : undefined}
           />
         ))}
       </div>

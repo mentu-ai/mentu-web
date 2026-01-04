@@ -4,13 +4,14 @@ import { useMemo } from 'react';
 import { useCommitments } from './useCommitments';
 import type { Commitment, CommitmentState } from '@/lib/mentu/types';
 
-export type KanbanColumn = 'todo' | 'in_progress' | 'in_review' | 'done';
+export type KanbanColumn = 'todo' | 'in_progress' | 'in_review' | 'done' | 'cancelled';
 
 export interface KanbanColumns {
   todo: Commitment[];
   in_progress: Commitment[];
   in_review: Commitment[];
   done: Commitment[];
+  cancelled: Commitment[];
 }
 
 /**
@@ -27,6 +28,8 @@ export function stateToColumn(state: CommitmentState): KanbanColumn {
       return 'in_review';
     case 'closed':
       return 'done';
+    case 'cancelled':
+      return 'cancelled';
     default:
       return 'todo';
   }
@@ -44,6 +47,7 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
       in_progress: [],
       in_review: [],
       done: [],
+      cancelled: [],
     };
 
     for (const commitment of commitments) {
@@ -56,6 +60,7 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
     result.in_progress.sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
     result.in_review.sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
     result.done.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+    result.cancelled.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 
     return result;
   }, [commitments]);
@@ -65,6 +70,7 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
     in_progress: columns.in_progress.length,
     in_review: columns.in_review.length,
     done: columns.done.length,
+    cancelled: columns.cancelled.length,
     total: commitments.length,
   }), [columns, commitments.length]);
 

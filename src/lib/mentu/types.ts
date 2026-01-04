@@ -3,7 +3,7 @@
 
 export type OperationType = 'capture' | 'commit' | 'claim' | 'release' | 'close' | 'annotate' | 'submit' | 'approve' | 'reopen' | 'publish';
 
-export type CommitmentState = 'open' | 'claimed' | 'in_review' | 'closed' | 'reopened';
+export type CommitmentState = 'open' | 'claimed' | 'in_review' | 'closed' | 'reopened' | 'cancelled';
 
 export interface CapturePayload {
   body: string;

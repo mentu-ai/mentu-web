@@ -4,16 +4,17 @@ import type { Commitment } from '@/lib/mentu/types';
 import { Badge } from '@/components/ui/badge';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TreeDeciduous, GitPullRequest, User } from 'lucide-react';
+import { TreeDeciduous, GitPullRequest, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CommitmentCardProps {
   commitment: Commitment;
   onClick: () => void;
   isSelected?: boolean;
+  isRunning?: boolean;
 }
 
-export function CommitmentCard({ commitment, onClick, isSelected }: CommitmentCardProps) {
+export function CommitmentCard({ commitment, onClick, isSelected, isRunning }: CommitmentCardProps) {
   const hasWorktree = commitment.state === 'claimed' || commitment.state === 'in_review' || commitment.state === 'reopened';
 
   return (
@@ -24,9 +25,18 @@ export function CommitmentCard({ commitment, onClick, isSelected }: CommitmentCa
         'hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-sm',
         isSelected
           ? 'border-blue-500 dark:border-blue-400 ring-1 ring-blue-500 dark:ring-blue-400'
-          : 'border-zinc-200 dark:border-zinc-800'
+          : 'border-zinc-200 dark:border-zinc-800',
+        isRunning && 'border-blue-300 dark:border-blue-600'
       )}
     >
+      {/* Running indicator */}
+      {isRunning && (
+        <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 mb-2">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span>Agent running...</span>
+        </div>
+      )}
+
       {/* Title */}
       <p className="font-medium text-sm line-clamp-2 mb-2">
         {commitment.body}

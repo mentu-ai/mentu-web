@@ -5,11 +5,6 @@ import { useBridgeLogs, useCommitmentLogs } from '@/hooks/useBridgeLogs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  Bot,
-  Wrench,
-  AlertCircle,
-  CheckSquare,
-  Square,
   Copy,
   Check,
   ArrowDownToLine,
@@ -159,41 +154,48 @@ export function BridgeLogsViewer({ commandId, commitmentId }: BridgeLogsViewerPr
 interface LogLineProps {
   log: {
     id: string;
-    type: 'system' | 'agent' | 'tool' | 'todo' | 'error';
+    type: 'system' | 'agent' | 'tool' | 'todo' | 'error' | 'task' | 'file';
     content: string;
   };
 }
 
 function LogLine({ log }: LogLineProps) {
-  const getIcon = () => {
+  const getEmoji = () => {
     switch (log.type) {
+      case 'task':
+        return '🚀';
       case 'system':
-        return <Bot className="h-3 w-3 text-zinc-500" />;
-      case 'tool':
-        return <Wrench className="h-3 w-3 text-blue-400" />;
-      case 'error':
-        return <AlertCircle className="h-3 w-3 text-red-400" />;
+        return '⚙️';
+      case 'agent':
+        return '💬';
       case 'todo':
-        return log.content.includes('[x]') || log.content.includes('[X]') ? (
-          <CheckSquare className="h-3 w-3 text-green-400" />
-        ) : (
-          <Square className="h-3 w-3 text-zinc-400" />
-        );
+        return '📋';
+      case 'tool':
+        return '🔧';
+      case 'file':
+        return '📄';
+      case 'error':
+        return '❌';
       default:
-        return null;
+        return '💬';
     }
   };
 
   const getColor = () => {
     switch (log.type) {
       case 'system':
-        return 'text-zinc-500';
-      case 'tool':
+        return 'text-zinc-400';
+      case 'task':
         return 'text-blue-300';
+      case 'tool':
+        return 'text-yellow-300';
       case 'error':
         return 'text-red-300';
       case 'todo':
-        return 'text-yellow-300';
+        return 'text-purple-300';
+      case 'file':
+        return 'text-green-300';
+      case 'agent':
       default:
         return 'text-zinc-300';
     }
@@ -201,7 +203,7 @@ function LogLine({ log }: LogLineProps) {
 
   return (
     <div className={cn('flex gap-2 py-0.5', getColor())}>
-      <span className="flex-shrink-0 mt-0.5">{getIcon()}</span>
+      <span className="flex-shrink-0">{getEmoji()}</span>
       <span className="whitespace-pre-wrap break-all">{log.content}</span>
     </div>
   );
