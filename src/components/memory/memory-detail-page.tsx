@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
-import { Header } from '@/components/layout/header';
 import { useMemory } from '@/hooks/useMemories';
 import { useOperations } from '@/hooks/useOperations';
 import { useRealtimeOperations } from '@/hooks/useRealtime';
@@ -49,206 +48,191 @@ export function MemoryDetailPage({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full">
-        <Header user={user} />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-zinc-500">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <p className="text-zinc-500">Loading...</p>
       </div>
     );
   }
 
   if (!memory) {
     return (
-      <div className="flex flex-col h-full">
-        <Header user={user} />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-zinc-500">Memory not found</p>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <p className="text-zinc-500">Memory not found</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <Header user={user} />
+    <div className="space-y-6">
+      {/* Back link */}
+      <Link
+        href={`/workspace/${workspaceName}/execution/memories`}
+        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Memories
+      </Link>
 
-      <div className="flex-1 p-4 md:p-6 space-y-6 overflow-auto">
-        {/* Back link */}
-        <Link
-          href={`/workspace/${workspaceName}/memories`}
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Memories
-        </Link>
-
-        {/* Header */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <code className="text-sm text-zinc-500 font-mono">{memory.id}</code>
-                {memory.kind && (
-                  <Badge variant="secondary">{memory.kind}</Badge>
-                )}
-              </div>
+      {/* Memory Card */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <code className="text-sm text-zinc-500 font-mono">{memory.id}</code>
+              {memory.kind && (
+                <Badge variant="secondary">{memory.kind}</Badge>
+              )}
             </div>
           </div>
-
-          {/* Body content */}
-          <div className="prose dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap">{memory.body}</p>
-          </div>
-
-          {/* Meta info */}
-          <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500">
-            <div>
-              <span className="text-zinc-400">Captured by</span>{' '}
-              <Link
-                href={`/workspace/${workspaceName}/actors/${memory.actor}`}
-                className="font-medium hover:underline"
-              >
-                {memory.actor}
-              </Link>
-            </div>
-            <Tooltip>
-              <TooltipTrigger>
-                <span>{relativeTime(memory.ts)}</span>
-              </TooltipTrigger>
-              <TooltipContent>{absoluteTime(memory.ts)}</TooltipContent>
-            </Tooltip>
-          </div>
-
-          {/* Refs */}
-          {memory.refs && memory.refs.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <p className="text-sm text-zinc-500 mb-2">References</p>
-              <div className="flex gap-2 flex-wrap">
-                {memory.refs.map((ref) => (
-                  <Link
-                    key={ref}
-                    href={
-                      ref.startsWith('mem_')
-                        ? `/workspace/${workspaceName}/memories/${ref}`
-                        : `/workspace/${workspaceName}/commitments/${ref}`
-                    }
-                    className="text-sm font-mono hover:underline"
-                  >
-                    {ref}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Meta data */}
-          {memory.meta && Object.keys(memory.meta).length > 0 && (
-            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <p className="text-sm text-zinc-500 mb-2">Metadata</p>
-              <pre className="text-xs bg-zinc-100 dark:bg-zinc-800 p-3 rounded-md overflow-auto">
-                {JSON.stringify(memory.meta, null, 2)}
-              </pre>
-            </div>
-          )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 flex-wrap">
-          <Button onClick={() => setCommitOpen(true)}>
-            <Target className="h-4 w-4 mr-2" />
-            Create Commitment from this
-          </Button>
-          <Button variant="outline" onClick={() => setAnnotateOpen(true)}>
-            Annotate
-          </Button>
+        {/* Body content */}
+        <div className="prose dark:prose-invert max-w-none">
+          <p className="whitespace-pre-wrap">{memory.body}</p>
         </div>
 
-        {/* Commitments using this as source */}
-        {commitmentsFromSource.length > 0 && (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Commitments from this source ({commitmentsFromSource.length})
-            </h2>
-            <div className="space-y-2">
-              {commitmentsFromSource.map((cmt) => (
+        {/* Meta info */}
+        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500">
+          <div>
+            <span className="text-zinc-400">Captured by</span>{' '}
+            <span className="font-medium">{memory.actor}</span>
+          </div>
+          <Tooltip>
+            <TooltipTrigger>
+              <span>{relativeTime(memory.ts)}</span>
+            </TooltipTrigger>
+            <TooltipContent>{absoluteTime(memory.ts)}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Refs */}
+        {memory.refs && memory.refs.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <p className="text-sm text-zinc-500 mb-2">References</p>
+            <div className="flex gap-2 flex-wrap">
+              {memory.refs.map((ref) => (
                 <Link
-                  key={cmt.id}
-                  href={`/workspace/${workspaceName}/commitments/${cmt.id}`}
-                  className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
+                  key={ref}
+                  href={
+                    ref.startsWith('mem_')
+                      ? `/workspace/${workspaceName}/execution/memories/${ref}`
+                      : `/workspace/${workspaceName}/execution/commitments/${ref}`
+                  }
+                  className="text-sm font-mono hover:underline"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <code className="text-xs text-zinc-500 font-mono">{cmt.id}</code>
-                      <p className="text-sm mt-1">{cmt.body}</p>
-                    </div>
-                    <Badge variant={cmt.state}>{cmt.state}</Badge>
-                  </div>
+                  {ref}
                 </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* Commitments using this as evidence */}
-        {commitmentsWithEvidence.length > 0 && (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              Used as Evidence ({commitmentsWithEvidence.length})
-            </h2>
-            <div className="space-y-2">
-              {commitmentsWithEvidence.map((cmt) => (
-                <Link
-                  key={cmt.id}
-                  href={`/workspace/${workspaceName}/commitments/${cmt.id}`}
-                  className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <code className="text-xs text-zinc-500 font-mono">{cmt.id}</code>
-                      <p className="text-sm mt-1">{cmt.body}</p>
-                    </div>
-                    <Badge variant="closed">closed</Badge>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Annotations */}
-        {memory.annotations.length > 0 && (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-            <h2 className="font-semibold mb-4">Annotations ({memory.annotations.length})</h2>
-            <div className="space-y-4">
-              {memory.annotations.map((annotation) => (
-                <div
-                  key={annotation.id}
-                  className="p-3 rounded-md bg-zinc-50 dark:bg-zinc-800"
-                >
-                  <div className="flex items-center gap-2 mb-2 text-sm">
-                    <span className="font-medium">{annotation.actor}</span>
-                    {annotation.kind && (
-                      <Badge variant="outline" className="text-xs">
-                        {annotation.kind}
-                      </Badge>
-                    )}
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="text-zinc-400">{relativeTime(annotation.ts)}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>{absoluteTime(annotation.ts)}</TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <p className="text-sm">{annotation.body}</p>
-                </div>
-              ))}
-            </div>
+        {/* Meta data */}
+        {memory.meta && Object.keys(memory.meta).length > 0 && (
+          <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <p className="text-sm text-zinc-500 mb-2">Metadata</p>
+            <pre className="text-xs bg-zinc-100 dark:bg-zinc-800 p-3 rounded-md overflow-auto">
+              {JSON.stringify(memory.meta, null, 2)}
+            </pre>
           </div>
         )}
       </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 flex-wrap">
+        <Button onClick={() => setCommitOpen(true)}>
+          <Target className="h-4 w-4 mr-2" />
+          Create Commitment from this
+        </Button>
+        <Button variant="outline" onClick={() => setAnnotateOpen(true)}>
+          Annotate
+        </Button>
+      </div>
+
+      {/* Commitments using this as source */}
+      {commitmentsFromSource.length > 0 && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Commitments from this source ({commitmentsFromSource.length})
+          </h2>
+          <div className="space-y-2">
+            {commitmentsFromSource.map((cmt) => (
+              <Link
+                key={cmt.id}
+                href={`/workspace/${workspaceName}/execution/commitments/${cmt.id}`}
+                className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <code className="text-xs text-zinc-500 font-mono">{cmt.id}</code>
+                    <p className="text-sm mt-1">{cmt.body}</p>
+                  </div>
+                  <Badge variant={cmt.state}>{cmt.state}</Badge>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Commitments using this as evidence */}
+      {commitmentsWithEvidence.length > 0 && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            Used as Evidence ({commitmentsWithEvidence.length})
+          </h2>
+          <div className="space-y-2">
+            {commitmentsWithEvidence.map((cmt) => (
+              <Link
+                key={cmt.id}
+                href={`/workspace/${workspaceName}/execution/commitments/${cmt.id}`}
+                className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <code className="text-xs text-zinc-500 font-mono">{cmt.id}</code>
+                    <p className="text-sm mt-1">{cmt.body}</p>
+                  </div>
+                  <Badge variant="closed">closed</Badge>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Annotations */}
+      {memory.annotations.length > 0 && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+          <h2 className="font-semibold mb-4">Annotations ({memory.annotations.length})</h2>
+          <div className="space-y-4">
+            {memory.annotations.map((annotation) => (
+              <div
+                key={annotation.id}
+                className="p-3 rounded-md bg-zinc-50 dark:bg-zinc-800"
+              >
+                <div className="flex items-center gap-2 mb-2 text-sm">
+                  <span className="font-medium">{annotation.actor}</span>
+                  {annotation.kind && (
+                    <Badge variant="outline" className="text-xs">
+                      {annotation.kind}
+                    </Badge>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="text-zinc-400">{relativeTime(annotation.ts)}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{absoluteTime(annotation.ts)}</TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-sm">{annotation.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Dialogs */}
       <AnnotateDialog
