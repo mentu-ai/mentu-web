@@ -22,12 +22,14 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="h-screen flex flex-col bg-zinc-50">
       <TopNav user={user ? { email: user.email } : undefined} />
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         <PlaneSidebar />
-        <main className="flex-1 p-8 max-w-5xl">
-          {children}
+        <main className="flex-1 overflow-auto p-8">
+          <div className="max-w-5xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>

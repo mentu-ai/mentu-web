@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Sidebar } from '@/components/layout/sidebar';
-import { MobileNav } from '@/components/layout/mobile-nav';
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -42,15 +40,6 @@ export default async function WorkspaceLayout({
     redirect('/');
   }
 
-  return (
-    <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950">
-      <div className="hidden md:flex">
-        <Sidebar workspaceName={workspace} />
-      </div>
-      <main className="flex-1 overflow-auto pb-16 md:pb-0">
-        {children}
-      </main>
-      <MobileNav workspaceName={workspace} />
-    </div>
-  );
+  // Minimal wrapper - navigation is handled by child layouts (plane layout, settings layout)
+  return <>{children}</>;
 }

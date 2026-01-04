@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import type { User } from '@supabase/supabase-js';
-import { Header } from '@/components/layout/header';
 import { useActorMappings, useCreateActorMapping, useDeleteActorMapping } from '@/hooks/useActorMappings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,18 +22,14 @@ import {
 } from '@/components/ui/select';
 import { relativeTime } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 interface ActorMappingsPageProps {
-  workspaceName: string;
   workspaceId: string;
-  user: User;
 }
 
 export function ActorMappingsPage({
-  workspaceName,
   workspaceId,
-  user,
 }: ActorMappingsPageProps) {
   const [addOpen, setAddOpen] = useState(false);
   const [externalSystem, setExternalSystem] = useState('github');
@@ -93,85 +86,73 @@ export function ActorMappingsPage({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Header user={user} />
-
-      <div className="flex-1 p-4 md:p-6 space-y-6 overflow-auto">
-        <Link
-          href={`/workspace/${workspaceName}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Settings
-        </Link>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Actor Mappings</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Map external identities to Mentu actors
-            </p>
-          </div>
-          <Button onClick={() => setAddOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Mapping
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Actor Mappings</h1>
+          <p className="text-sm text-zinc-500">
+            Map external identities to Mentu actors
+          </p>
         </div>
-
-        {isLoading ? (
-          <div className="py-8 text-center text-zinc-500">Loading...</div>
-        ) : !mappings || mappings.length === 0 ? (
-          <div className="py-8 text-center text-zinc-500">
-            No actor mappings configured
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-zinc-50 dark:bg-zinc-800">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
-                    External System
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
-                    External ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
-                    Mentu Actor
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
-                    Created
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-zinc-500">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {mappings.map((mapping) => (
-                  <tr key={mapping.id}>
-                    <td className="px-4 py-3 text-sm">{mapping.external_system}</td>
-                    <td className="px-4 py-3 text-sm font-mono">{mapping.external_id}</td>
-                    <td className="px-4 py-3 text-sm font-medium">{mapping.mentu_actor}</td>
-                    <td className="px-4 py-3 text-sm text-zinc-500">
-                      {relativeTime(mapping.created_at)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDelete(mapping.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Button onClick={() => setAddOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Mapping
+        </Button>
       </div>
+
+      {isLoading ? (
+        <div className="py-8 text-center text-zinc-500">Loading...</div>
+      ) : !mappings || mappings.length === 0 ? (
+        <div className="py-8 text-center text-zinc-500">
+          No actor mappings configured
+        </div>
+      ) : (
+        <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-zinc-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+                  External System
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+                  External ID
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+                  Mentu Actor
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-500">
+                  Created
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-zinc-500">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200">
+              {mappings.map((mapping) => (
+                <tr key={mapping.id}>
+                  <td className="px-4 py-3 text-sm">{mapping.external_system}</td>
+                  <td className="px-4 py-3 text-sm font-mono">{mapping.external_id}</td>
+                  <td className="px-4 py-3 text-sm font-medium">{mapping.mentu_actor}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-500">
+                    {relativeTime(mapping.created_at)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => handleDelete(mapping.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
