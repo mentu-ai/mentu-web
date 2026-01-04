@@ -32,11 +32,9 @@ export default async function BridgePageRoute({ params }: BridgePageRouteProps) 
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <BridgePage
-        workspaceName={workspace}
-        workspaceId={workspaceData.id}
-      />
-    </div>
+    <BridgePage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+    />
   );
 }

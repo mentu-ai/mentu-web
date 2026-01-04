@@ -32,13 +32,11 @@ export default async function MemoryPage({ params }: MemoryPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <MemoryDetailPage
-        workspaceName={workspace}
-        workspaceId={workspaceData.id}
-        memoryId={id}
-        user={user}
-      />
-    </div>
+    <MemoryDetailPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+      memoryId={id}
+      user={user}
+    />
   );
 }

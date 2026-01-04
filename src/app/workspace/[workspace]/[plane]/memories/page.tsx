@@ -27,11 +27,9 @@ export default async function MemoriesRoute({ params }: MemoriesRouteProps) {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
-      <MemoriesListPage
-        workspaceName={workspace}
-        workspaceId={workspaceData.id}
-      />
-    </div>
+    <MemoriesListPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+    />
   );
 }

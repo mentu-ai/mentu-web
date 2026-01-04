@@ -32,13 +32,11 @@ export default async function CommitmentPage({ params }: CommitmentPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <CommitmentDetailPage
-        workspaceName={workspace}
-        workspaceId={workspaceData.id}
-        commitmentId={id}
-        user={user}
-      />
-    </div>
+    <CommitmentDetailPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+      commitmentId={id}
+      user={user}
+    />
   );
 }

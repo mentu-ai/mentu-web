@@ -32,12 +32,10 @@ export default async function BridgeCommandPage({ params }: BridgeCommandPagePro
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <BridgeCommandDetailPage
-        workspaceName={workspace}
-        workspaceId={workspaceData.id}
-        commandId={id}
-      />
-    </div>
+    <BridgeCommandDetailPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+      commandId={id}
+    />
   );
 }
