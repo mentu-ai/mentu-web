@@ -37,6 +37,18 @@ export function useOperations(workspaceId: string | undefined) {
       });
       console.log('[useOperations] Operation breakdown:', opCounts);
 
+      // Log sample of submit operations for debugging
+      const submitOps = (data || []).filter((op: OperationRow) => op.op === 'submit');
+      if (submitOps.length > 0) {
+        console.log('[useOperations] Submit operations found:', submitOps.length);
+        submitOps.forEach((op: OperationRow) => {
+          const payload = op.payload as { commitment?: string };
+          console.log('[useOperations] Submit:', op.id, '-> commitment:', payload.commitment);
+        });
+      } else {
+        console.warn('[useOperations] NO SUBMIT OPERATIONS FOUND!');
+      }
+
       return (data || []) as unknown as OperationRow[];
     },
     enabled: !!workspaceId,

@@ -33,6 +33,23 @@ export interface ClosePayload {
   evidence: string;
 }
 
+export interface SubmitPayload {
+  commitment: string;
+  evidence?: string[];
+  summary?: string;
+  tier?: string;
+}
+
+export interface ApprovePayload {
+  commitment: string;
+  comment?: string;
+}
+
+export interface ReopenPayload {
+  commitment: string;
+  reason?: string;
+}
+
 export interface AnnotatePayload {
   target: string;
   body: string;
@@ -47,6 +64,9 @@ export type Payload =
   | ClaimPayload
   | ReleasePayload
   | ClosePayload
+  | SubmitPayload
+  | ApprovePayload
+  | ReopenPayload
   | AnnotatePayload;
 
 // Database operation row
