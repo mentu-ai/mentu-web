@@ -32,10 +32,11 @@ export default async function LedgerRoute({ params }: LedgerRouteProps) {
   }
 
   return (
-    <LedgerPage
-      workspaceName={workspace}
-      workspaceId={workspaceData.id}
-      user={user}
-    />
+    <div className="p-4 md:p-6">
+      <LedgerPage
+        workspaceName={workspace}
+        workspaceId={workspaceData.id}
+      />
+    </div>
   );
 }

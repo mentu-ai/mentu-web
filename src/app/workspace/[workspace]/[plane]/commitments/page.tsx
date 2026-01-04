@@ -32,10 +32,12 @@ export default async function CommitmentsRoute({ params }: CommitmentsRouteProps
   }
 
   return (
-    <CommitmentsListPage
-      workspaceName={workspace}
-      workspaceId={workspaceData.id}
-      user={user}
-    />
+    <div className="p-4 md:p-6">
+      <CommitmentsListPage
+        workspaceName={workspace}
+        workspaceId={workspaceData.id}
+        user={user}
+      />
+    </div>
   );
 }
