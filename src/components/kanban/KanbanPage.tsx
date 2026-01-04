@@ -10,7 +10,7 @@ import { KanbanBoard } from './KanbanBoard';
 import { CommitmentPanel } from './CommitmentPanel';
 import { CaptureMemoryDialog } from '@/components/memory/capture-memory-dialog';
 import { CreateCommitmentDialog } from '@/components/commitment/create-commitment-dialog';
-import { Search, X } from 'lucide-react';
+import { Search, X, Bug, RefreshCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,8 +26,9 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
   const [commitOpen, setCommitOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDebug, setShowDebug] = useState(false);
 
-  const { columns, counts, isLoading } = useKanbanCommitments(workspaceId);
+  const { columns, counts, isLoading, refetch } = useKanbanCommitments(workspaceId);
   const { data: bridgeCommands } = useBridgeCommands(workspaceId);
   useRealtimeOperations(workspaceId);
 
@@ -95,6 +96,22 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => refetch()}
+                title="Refresh data"
+              >
+                <RefreshCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowDebug(!showDebug)}
+                title="Toggle debug info"
+              >
+                <Bug className="h-4 w-4" />
+              </Button>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
@@ -116,6 +133,26 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
               </div>
             </div>
           </div>
+
+          {/* Debug panel */}
+          {showDebug && (
+            <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm font-mono">
+              <div className="font-bold mb-2">Debug Info</div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div>todo: {counts.todo}</div>
+                <div>in_progress: {counts.in_progress}</div>
+                <div className="font-bold text-yellow-700 dark:text-yellow-300">in_review: {counts.in_review}</div>
+                <div>done: {counts.done}</div>
+                <div>cancelled: {counts.cancelled}</div>
+              </div>
+              <div className="mt-2 text-xs text-zinc-500">
+                workspaceId: {workspaceId}
+              </div>
+              <div className="text-xs text-zinc-500">
+                In Review Items: {columns.in_review.map(c => c.id).join(', ') || 'none'}
+              </div>
+            </div>
+          )}
 
           {/* Loading state */}
           {isLoading ? (
