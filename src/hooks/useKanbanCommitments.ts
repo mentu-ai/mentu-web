@@ -62,6 +62,14 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
     result.done.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
     result.cancelled.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 
+    console.log('[useKanbanCommitments] Column counts:', {
+      todo: result.todo.length,
+      in_progress: result.in_progress.length,
+      in_review: result.in_review.length,
+      done: result.done.length,
+      cancelled: result.cancelled.length,
+    });
+
     return result;
   }, [commitments]);
 

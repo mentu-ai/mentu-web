@@ -8,8 +8,26 @@ export function useCommitments(workspaceId: string | undefined) {
   const { data: operations, isLoading, error, refetch } = useOperations(workspaceId);
 
   const commitments = useMemo(() => {
-    if (!operations) return [];
-    return computeCommitments(operations);
+    if (!operations) {
+      console.log('[useCommitments] No operations yet');
+      return [];
+    }
+    const computed = computeCommitments(operations);
+
+    // Log state breakdown
+    const stateCounts: Record<string, number> = {};
+    computed.forEach(c => {
+      stateCounts[c.state] = (stateCounts[c.state] || 0) + 1;
+    });
+    console.log('[useCommitments] Computed', computed.length, 'commitments:', stateCounts);
+
+    // Log in_review commitments specifically
+    const inReview = computed.filter(c => c.state === 'in_review');
+    if (inReview.length > 0) {
+      console.log('[useCommitments] In Review commitments:', inReview.map(c => ({ id: c.id, body: c.body.substring(0, 50) })));
+    }
+
+    return computed;
   }, [operations]);
 
   return {

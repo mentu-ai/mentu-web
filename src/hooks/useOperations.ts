@@ -12,20 +12,36 @@ export function useOperations(workspaceId: string | undefined) {
     queryFn: async () => {
       if (!workspaceId) return [];
 
+      console.log('[useOperations] Fetching operations for workspace:', workspaceId);
+
       // Fetch all operations (Supabase default limit is 1000)
       // Use a high limit to get all - for very large datasets, implement pagination
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('operations')
         .select('*', { count: 'exact' })
         .eq('workspace_id', workspaceId)
         .order('synced_at', { ascending: true })
         .limit(10000);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useOperations] Error fetching:', error);
+        throw error;
+      }
+
+      console.log('[useOperations] Fetched', data?.length, 'operations (total count:', count, ')');
+
+      // Log operation breakdown
+      const opCounts: Record<string, number> = {};
+      (data || []).forEach((op: OperationRow) => {
+        opCounts[op.op] = (opCounts[op.op] || 0) + 1;
+      });
+      console.log('[useOperations] Operation breakdown:', opCounts);
+
       return (data || []) as unknown as OperationRow[];
     },
     enabled: !!workspaceId,
-    staleTime: Infinity, // Realtime handles updates
+    staleTime: 5 * 60 * 1000, // 5 minutes - realtime handles incremental updates
+    refetchOnMount: 'always', // Always refetch on mount to ensure fresh data
   });
 }
 

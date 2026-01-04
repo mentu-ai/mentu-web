@@ -51,6 +51,11 @@ export function computeCommitmentState(
     }
   }
 
+  // Debug log for in_review state
+  if (state === 'in_review') {
+    console.log('[computeCommitmentState] Found in_review commitment:', cmtId);
+  }
+
   return { state, owner, evidence, closed_by };
 }
 
