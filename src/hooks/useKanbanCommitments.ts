@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useCommitments } from './useCommitments';
-import type { Commitment, CommitmentState } from '@/lib/mentu/types';
+import { useOperations } from './useOperations';
+import { computeCommitments } from '@/lib/mentu/state';
+import type { Commitment, CommitmentState, OperationRow } from '@/lib/mentu/types';
 
 export type KanbanColumn = 'todo' | 'in_progress' | 'in_review' | 'done' | 'cancelled';
 
@@ -39,7 +40,28 @@ export function stateToColumn(state: CommitmentState): KanbanColumn {
  * Hook to get commitments grouped by kanban column.
  */
 export function useKanbanCommitments(workspaceId: string | undefined) {
-  const { commitments, isLoading, error, refetch } = useCommitments(workspaceId);
+  const { data: operations, isLoading, error, refetch } = useOperations(workspaceId);
+
+  // Compute commitments from operations
+  const commitments = useMemo(() => {
+    if (!operations) return [];
+    return computeCommitments(operations);
+  }, [operations]);
+
+  // Compute operation stats for debugging
+  const operationStats = useMemo(() => {
+    if (!operations) return null;
+    const opCounts: Record<string, number> = {};
+    operations.forEach((op: OperationRow) => {
+      opCounts[op.op] = (opCounts[op.op] || 0) + 1;
+    });
+    return {
+      total: operations.length,
+      breakdown: opCounts,
+      commitCount: opCounts['commit'] || 0,
+      submitCount: opCounts['submit'] || 0,
+    };
+  }, [operations]);
 
   const columns = useMemo<KanbanColumns>(() => {
     const result: KanbanColumns = {
@@ -85,6 +107,7 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
   return {
     columns,
     counts,
+    operationStats,
     isLoading,
     error,
     refetch,

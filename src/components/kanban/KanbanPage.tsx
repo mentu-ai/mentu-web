@@ -28,7 +28,7 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
   const [searchQuery, setSearchQuery] = useState('');
   const [showDebug, setShowDebug] = useState(false);
 
-  const { columns, counts, isLoading, refetch } = useKanbanCommitments(workspaceId);
+  const { columns, counts, operationStats, isLoading, refetch } = useKanbanCommitments(workspaceId);
   const { data: bridgeCommands } = useBridgeCommands(workspaceId);
   useRealtimeOperations(workspaceId);
 
@@ -138,6 +138,20 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
           {showDebug && (
             <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm font-mono">
               <div className="font-bold mb-2">Debug Info</div>
+
+              {/* Operations stats */}
+              {operationStats && (
+                <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                  <div className="font-bold text-blue-700 dark:text-blue-300">Operations Fetched</div>
+                  <div>Total: {operationStats.total}</div>
+                  <div>commit ops: {operationStats.commitCount} | submit ops: {operationStats.submitCount}</div>
+                  <div className="text-xs mt-1">
+                    {Object.entries(operationStats.breakdown).map(([op, count]) => `${op}:${count}`).join(' | ')}
+                  </div>
+                </div>
+              )}
+
+              {/* Commitment counts */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 <div>todo: {counts.todo}</div>
                 <div>in_progress: {counts.in_progress}</div>
