@@ -4,6 +4,45 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { OperationRow } from '@/lib/mentu/types';
 
+const PAGE_SIZE = 1000; // Supabase default limit
+
+/**
+ * Fetch all operations with pagination to overcome Supabase's 1000 row limit
+ */
+async function fetchAllOperations(supabase: ReturnType<typeof createClient>, workspaceId: string): Promise<OperationRow[]> {
+  const allOperations: OperationRow[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  console.log('[useOperations] Starting paginated fetch for workspace:', workspaceId);
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('operations')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('synced_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error('[useOperations] Error fetching page at offset', offset, ':', error);
+      throw error;
+    }
+
+    if (data && data.length > 0) {
+      allOperations.push(...(data as unknown as OperationRow[]));
+      console.log('[useOperations] Fetched page:', offset, '-', offset + data.length - 1, '| Total so far:', allOperations.length);
+      offset += PAGE_SIZE;
+      hasMore = data.length === PAGE_SIZE; // If we got less than PAGE_SIZE, we're done
+    } else {
+      hasMore = false;
+    }
+  }
+
+  console.log('[useOperations] Pagination complete. Total operations:', allOperations.length);
+  return allOperations;
+}
+
 export function useOperations(workspaceId: string | undefined) {
   const supabase = createClient();
 
@@ -12,44 +51,23 @@ export function useOperations(workspaceId: string | undefined) {
     queryFn: async () => {
       if (!workspaceId) return [];
 
-      console.log('[useOperations] Fetching operations for workspace:', workspaceId);
-
-      // Fetch all operations (Supabase default limit is 1000)
-      // Use a high limit to get all - for very large datasets, implement pagination
-      const { data, error, count } = await supabase
-        .from('operations')
-        .select('*', { count: 'exact' })
-        .eq('workspace_id', workspaceId)
-        .order('synced_at', { ascending: true })
-        .limit(10000);
-
-      if (error) {
-        console.error('[useOperations] Error fetching:', error);
-        throw error;
-      }
-
-      console.log('[useOperations] Fetched', data?.length, 'operations (total count:', count, ')');
+      // Use pagination to fetch ALL operations
+      const data = await fetchAllOperations(supabase, workspaceId);
 
       // Log operation breakdown
       const opCounts: Record<string, number> = {};
-      (data || []).forEach((op: OperationRow) => {
+      data.forEach((op: OperationRow) => {
         opCounts[op.op] = (opCounts[op.op] || 0) + 1;
       });
       console.log('[useOperations] Operation breakdown:', opCounts);
 
-      // Log sample of submit operations for debugging
-      const submitOps = (data || []).filter((op: OperationRow) => op.op === 'submit');
+      // Log submit operations for debugging
+      const submitOps = data.filter((op: OperationRow) => op.op === 'submit');
       if (submitOps.length > 0) {
         console.log('[useOperations] Submit operations found:', submitOps.length);
-        submitOps.forEach((op: OperationRow) => {
-          const payload = op.payload as { commitment?: string };
-          console.log('[useOperations] Submit:', op.id, '-> commitment:', payload.commitment);
-        });
-      } else {
-        console.warn('[useOperations] NO SUBMIT OPERATIONS FOUND!');
       }
 
-      return (data || []) as unknown as OperationRow[];
+      return data;
     },
     enabled: !!workspaceId,
     staleTime: 5 * 60 * 1000, // 5 minutes - realtime handles incremental updates
