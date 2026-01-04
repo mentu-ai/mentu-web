@@ -10,7 +10,8 @@ import { KanbanBoard } from './KanbanBoard';
 import { CommitmentPanel } from './CommitmentPanel';
 import { CaptureMemoryDialog } from '@/components/memory/capture-memory-dialog';
 import { CreateCommitmentDialog } from '@/components/commitment/create-commitment-dialog';
-import { Search, X, Bug, RefreshCcw } from 'lucide-react';
+import { CloudTerminal } from '@/components/terminal/CloudTerminal';
+import { Search, X, Bug, RefreshCcw, Terminal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDebug, setShowDebug] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
 
   const { columns, counts, operationStats, isLoading, refetch } = useKanbanCommitments(workspaceId);
   const { data: bridgeCommands } = useBridgeCommands(workspaceId);
@@ -112,6 +114,15 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
               >
                 <Bug className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTerminal(!showTerminal)}
+                title="Toggle cloud terminal"
+                className={showTerminal ? 'bg-zinc-200 dark:bg-zinc-700' : ''}
+              >
+                <Terminal className="h-4 w-4" />
+              </Button>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
@@ -165,6 +176,13 @@ export function KanbanPage({ workspaceName, workspaceId, user }: KanbanPageProps
               <div className="text-xs text-zinc-500">
                 In Review Items: {columns.in_review.map(c => c.id).join(', ') || 'none'}
               </div>
+            </div>
+          )}
+
+          {/* Cloud Terminal panel */}
+          {showTerminal && (
+            <div className="mb-4 rounded-lg overflow-hidden border border-zinc-700">
+              <CloudTerminal />
             </div>
           )}
 
