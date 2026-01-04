@@ -15,6 +15,7 @@ import { SpawnAgentButton } from './actions/SpawnAgentButton';
 import { DevServerButton } from './actions/DevServerButton';
 import { CreatePRButton } from './actions/CreatePRButton';
 import { MergeButton } from './actions/MergeButton';
+import { ApproveButton } from './actions/ApproveButton';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -216,6 +217,10 @@ export function CommitmentPanel({
               hasWorktree={hasWorktree}
             />
             <MergeButton
+              commitment={commitment}
+              workspaceId={workspaceId}
+            />
+            <ApproveButton
               commitment={commitment}
               workspaceId={workspaceId}
             />
