@@ -3,21 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Terminal } from 'lucide-react';
 import { PlaneTabs } from './PlaneTabs';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { ProjectSettingsModal } from '@/components/modals/ProjectSettingsModal';
+import { useTerminal } from '@/contexts/TerminalContext';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-interface TopNavProps {
-  user?: {
-    name?: string;
-    email?: string;
-  };
-}
-
-export function TopNav({ user }: TopNavProps) {
+export function TopNav() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const params = useParams();
   const workspace = params.workspace as string;
+  const { isOpen: terminalOpen, toggle: toggleTerminal } = useTerminal();
 
   return (
     <>
@@ -39,12 +37,23 @@ export function TopNav({ user }: TopNavProps) {
           {/* Center: Plane Tabs */}
           <PlaneTabs />
 
-          {/* Right: User */}
+          {/* Right: Terminal button */}
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full" />
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {user?.name || user?.email || 'User'}
-            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTerminal}
+              className={cn(
+                'relative',
+                terminalOpen && 'bg-zinc-100 dark:bg-zinc-800'
+              )}
+              title="Toggle Terminal"
+            >
+              <Terminal className="h-5 w-5" />
+              {terminalOpen && (
+                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green-500" />
+              )}
+            </Button>
           </div>
         </div>
       </nav>
