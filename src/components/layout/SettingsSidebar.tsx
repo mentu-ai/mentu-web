@@ -37,6 +37,7 @@ export function SettingsSidebar({ workspaceName, user }: SettingsSidebarProps) {
       <div className="flex-1 p-4">
         <Link
           href={`/workspace/${workspaceName}/execution`}
+          prefetch={false}
           className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -56,6 +57,7 @@ export function SettingsSidebar({ workspaceName, user }: SettingsSidebarProps) {
               <Link
                 key={item.id}
                 href={href}
+                prefetch={false}
                 className={cn(
                   'flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors',
                   isActive

@@ -29,11 +29,13 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
         <TopNav />
         <div className="flex flex-1 overflow-hidden">
           <PlaneSidebar user={user ? { email: user.email } : undefined} />
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            {children}
-          </main>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 overflow-auto p-4 md:p-6">
+              {children}
+            </main>
+            <ResizableTerminalPanel />
+          </div>
         </div>
-        <ResizableTerminalPanel />
       </div>
     </TerminalProvider>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useEffect } from 'react';
-import { X, Minus, Maximize2 } from 'lucide-react';
+import { X, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
 import { CloudTerminal } from './CloudTerminal';
@@ -55,10 +55,9 @@ export function ResizableTerminalPanel() {
     <div
       ref={panelRef}
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50',
+        'flex-shrink-0',
         'bg-zinc-900 border-t border-zinc-700',
-        'flex flex-col',
-        'motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200'
+        'flex flex-col'
       )}
       style={{ height }}
     >
@@ -66,44 +65,37 @@ export function ResizableTerminalPanel() {
       <div
         onMouseDown={handleMouseDown}
         className={cn(
-          'absolute -top-1 left-0 right-0 h-2 cursor-ns-resize',
-          'hover:bg-blue-500/30 transition-colors',
-          'flex items-center justify-center'
+          'h-1 cursor-ns-resize',
+          'hover:bg-blue-500/50 transition-colors',
+          'bg-zinc-700'
         )}
-      >
-        <div className="w-16 h-1 rounded-full bg-zinc-600 hover:bg-zinc-500" />
-      </div>
+      />
 
-      {/* Terminal header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-800 border-b border-zinc-700">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-          </div>
-          <span className="text-sm font-medium text-zinc-300">Terminal</span>
+      {/* Terminal header - VS Code style */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-800 border-b border-zinc-700">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-zinc-300 uppercase tracking-wide">Terminal</span>
           <span className="text-xs text-zinc-500">Cloud Session</span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={() => setHeight(MIN_HEIGHT)}
-            className="p-1.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
             title="Minimize"
           >
-            <Minus className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4" />
           </button>
           <button
             onClick={() => setHeight(MAX_HEIGHT)}
-            className="p-1.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
             title="Maximize"
           >
-            <Maximize2 className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4" />
           </button>
           <button
             onClick={close}
-            className="p-1.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
             title="Close"
           >
             <X className="w-4 h-4" />

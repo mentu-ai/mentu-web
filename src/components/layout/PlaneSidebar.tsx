@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { planeConfig, Plane, isValidPlane } from '@/lib/navigation/planeConfig';
 import { cn } from '@/lib/utils';
 import { User, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 
 interface PlaneSidebarProps {
   user?: {
@@ -44,6 +43,7 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
             <Link
               key={view.id}
               href={href}
+              prefetch={false}
               className={cn(
                 'block w-full px-3 py-2 text-sm text-left rounded-lg transition-colors',
                 isActive

@@ -23,13 +23,15 @@ export default async function SettingsLayout({ children, params }: SettingsLayou
             workspaceName={workspace}
             user={user ? { email: user.email } : undefined}
           />
-          <main className="flex-1 overflow-auto p-8">
-            <div className="max-w-3xl">
-              {children}
-            </div>
-          </main>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 overflow-auto p-8">
+              <div className="max-w-3xl">
+                {children}
+              </div>
+            </main>
+            <ResizableTerminalPanel />
+          </div>
         </div>
-        <ResizableTerminalPanel />
       </div>
     </TerminalProvider>
   );
