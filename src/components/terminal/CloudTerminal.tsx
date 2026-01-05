@@ -36,7 +36,7 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
     terminalInstanceRef.current = term;
 
     // Connect WebSocket
-    const wsUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'wss://api.mentu.rashidazarang.com/terminal';
+    const wsUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'wss://api.mentu.ai/terminal';
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
