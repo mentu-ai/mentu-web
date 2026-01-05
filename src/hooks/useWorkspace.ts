@@ -2,6 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/lib/supabase/types';
+
+type Workspace = Database['public']['Tables']['workspaces']['Row'];
 
 export function useWorkspace(workspaceName: string) {
   const supabase = createClient();
@@ -16,7 +19,7 @@ export function useWorkspace(workspaceName: string) {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Workspace;
     },
   });
 }
@@ -26,7 +29,7 @@ export function useWorkspaces() {
 
   return useQuery({
     queryKey: ['workspaces'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Workspace[]> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
@@ -34,13 +37,13 @@ export function useWorkspaces() {
       const { data: memberships, error: memberError } = await supabase
         .from('workspace_members')
         .select('workspace_id')
-        .eq('user_id', user.id) as { data: { workspace_id: string }[] | null; error: Error | null };
+        .eq('user_id', user.id);
 
       if (memberError) throw memberError;
 
       if (!memberships?.length) return [];
 
-      const workspaceIds = memberships.map(m => m.workspace_id);
+      const workspaceIds = (memberships as { workspace_id: string }[]).map(m => m.workspace_id);
 
       const { data: workspaces, error } = await supabase
         .from('workspaces')
@@ -48,7 +51,7 @@ export function useWorkspaces() {
         .in('id', workspaceIds);
 
       if (error) throw error;
-      return workspaces || [];
+      return (workspaces || []) as Workspace[];
     },
   });
 }
