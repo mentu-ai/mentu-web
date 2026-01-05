@@ -1,27 +1,35 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { isValidPlane, Plane } from '@/lib/navigation/planeConfig';
 import { ContextOverview } from '@/components/planes/context/ContextOverview';
 import { CapabilityOverview } from '@/components/planes/capability/CapabilityOverview';
-import { ExecutionOverview } from '@/components/planes/execution/ExecutionOverview';
 
 interface PlanePageProps {
   params: Promise<{ workspace: string; plane: string }>;
 }
 
-const overviewComponents: Record<Plane, React.ComponentType> = {
+const overviewComponents: Record<Plane, React.ComponentType | null> = {
   context: ContextOverview,
   capability: CapabilityOverview,
-  execution: ExecutionOverview,
+  execution: null, // Redirects to kanban
 };
 
 export default async function PlanePage({ params }: PlanePageProps) {
-  const { plane } = await params;
+  const { workspace, plane } = await params;
 
   if (!isValidPlane(plane)) {
     notFound();
   }
 
+  // Execution plane redirects to kanban (no overview page)
+  if (plane === 'execution') {
+    redirect(`/workspace/${workspace}/execution/kanban`);
+  }
+
   const OverviewComponent = overviewComponents[plane];
+  if (!OverviewComponent) {
+    notFound();
+  }
+
   return (
     <div className="p-8 max-w-5xl">
       <OverviewComponent />

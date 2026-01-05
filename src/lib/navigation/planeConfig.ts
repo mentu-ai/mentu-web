@@ -39,7 +39,6 @@ export const planeConfig: Record<Plane, PlaneConfig> = {
     label: 'Execution',
     description: 'Your commitment ledger',
     views: [
-      { id: 'overview', label: 'Overview', href: '' },
       { id: 'kanban', label: 'Kanban', href: '/kanban' },
       { id: 'commitments', label: 'Commitments', href: '/commitments' },
       { id: 'memories', label: 'Memories', href: '/memories' },

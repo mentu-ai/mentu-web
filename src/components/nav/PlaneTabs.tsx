@@ -12,12 +12,20 @@ export function PlaneTabs() {
 
   const activePlane: Plane = isValidPlane(currentPlane) ? currentPlane : 'execution';
 
+  // Execution plane links directly to kanban (no overview)
+  const getPlaneHref = (plane: Plane) => {
+    if (plane === 'execution') {
+      return `/workspace/${workspace}/execution/kanban`;
+    }
+    return `/workspace/${workspace}/${plane}`;
+  };
+
   return (
     <div className="flex items-center gap-1">
       {planes.map((plane) => (
         <Link
           key={plane}
-          href={`/workspace/${workspace}/${plane}`}
+          href={getPlaneHref(plane)}
           className={cn(
             'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
             activePlane === plane
