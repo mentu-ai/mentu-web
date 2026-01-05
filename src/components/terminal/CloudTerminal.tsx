@@ -31,7 +31,11 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
-    fitAddon.fit();
+
+    // Delay initial fit to ensure container has dimensions
+    requestAnimationFrame(() => {
+      fitAddon.fit();
+    });
 
     terminalInstanceRef.current = term;
 
@@ -112,9 +116,11 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
   }, []);
 
   return (
-    <div className={`${className} flex flex-col`}>
-      <div ref={terminalRef} className="flex-1 min-h-0" />
-      <div className="flex items-center justify-end px-3 py-1 bg-zinc-900 border-t border-zinc-800">
+    <div className={`${className} relative`}>
+      {/* Terminal fills entire container */}
+      <div ref={terminalRef} className="absolute inset-0 bottom-6" />
+      {/* Status bar at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-6 flex items-center justify-end px-3 bg-zinc-900 border-t border-zinc-800">
         <span className={`text-xs px-2 py-0.5 rounded ${
           status === 'connected' ? 'bg-green-900 text-green-300' :
           status === 'connecting' ? 'bg-yellow-900 text-yellow-300' :
