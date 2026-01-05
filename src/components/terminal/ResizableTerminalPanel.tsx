@@ -104,7 +104,7 @@ export function ResizableTerminalPanel() {
       </div>
 
       {/* Terminal content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <CloudTerminal className="h-full" />
       </div>
     </div>

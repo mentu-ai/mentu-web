@@ -95,17 +95,26 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
 
     window.addEventListener('resize', handleResize);
 
+    // Watch for container size changes (e.g., when panel is resized)
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    if (terminalRef.current) {
+      resizeObserver.observe(terminalRef.current);
+    }
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       socket.close();
       term.dispose();
     };
   }, []);
 
   return (
-    <div className={className}>
-      <div className="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-700">
-        <span className="text-sm text-zinc-400">Cloud Terminal</span>
+    <div className={`${className} flex flex-col`}>
+      <div ref={terminalRef} className="flex-1 min-h-0" />
+      <div className="flex items-center justify-end px-3 py-1 bg-zinc-900 border-t border-zinc-800">
         <span className={`text-xs px-2 py-0.5 rounded ${
           status === 'connected' ? 'bg-green-900 text-green-300' :
           status === 'connecting' ? 'bg-yellow-900 text-yellow-300' :
@@ -114,7 +123,6 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
           {status}
         </span>
       </div>
-      <div ref={terminalRef} className="h-[400px]" />
     </div>
   );
 }
