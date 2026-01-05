@@ -1,18 +1,26 @@
 'use client';
 
+import { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   useWorkspaceNavigator,
   MOCK_WORKSPACES,
   MOCK_INFRASTRUCTURE,
+  type NavigatorWorkspace,
 } from '@/hooks/useWorkspaceNavigator';
 import { InfrastructureBar } from './InfrastructureBar';
 import { WorkspaceCard } from './WorkspaceCard';
 import { ConfirmSheet } from './ConfirmSheet';
 import { DeployingView } from './DeployingView';
-import { DeployedView } from './DeployedView';
 
 export function WorkspaceNavigator() {
+  const router = useRouter();
+
+  const handleDeployComplete = useCallback((workspace: NavigatorWorkspace) => {
+    router.push(`/workspace/${workspace.id}`);
+  }, [router]);
+
   const {
     view,
     selectedWorkspace,
@@ -21,8 +29,9 @@ export function WorkspaceNavigator() {
     selectWorkspace,
     confirmDeploy,
     cancel,
-    back,
-  } = useWorkspaceNavigator();
+  } = useWorkspaceNavigator({
+    onDeployComplete: handleDeployComplete,
+  });
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -117,16 +126,6 @@ export function WorkspaceNavigator() {
           workspace={selectedWorkspace}
           stage={deployStage}
           logs={logs}
-        />
-      )}
-
-      {/* ================================================================= */}
-      {/* DEPLOYED STATE: Show command center                               */}
-      {/* ================================================================= */}
-      {view === 'deployed' && (
-        <DeployedView
-          workspace={selectedWorkspace}
-          onBack={back}
         />
       )}
     </div>
