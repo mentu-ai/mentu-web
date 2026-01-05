@@ -11,7 +11,6 @@ export function ContextOverview() {
   const cards = [
     { id: 'genesis', title: 'Genesis', description: 'Constitutional principles and trust gradient', stat: 'Identity', href: `${basePath}/genesis` },
     { id: 'knowledge', title: 'Knowledge', description: 'Documents, specs, and guides', stat: 'Reference', href: `${basePath}/knowledge` },
-    { id: 'actors', title: 'Actors', description: 'Humans and agents with permissions', stat: 'Permissions', href: `${basePath}/actors` },
     { id: 'skills', title: 'Skills', description: 'Reusable knowledge + actor directives', stat: 'Capabilities', href: `${basePath}/skills` },
   ];
 

@@ -21,7 +21,6 @@ export const planeConfig: Record<Plane, PlaneConfig> = {
       { id: 'overview', label: 'Overview', href: '' },
       { id: 'genesis', label: 'Genesis', href: '/genesis' },
       { id: 'knowledge', label: 'Knowledge', href: '/knowledge' },
-      { id: 'actors', label: 'Actors', href: '/actors' },
       { id: 'skills', label: 'Skills', href: '/skills' },
     ]
   },
