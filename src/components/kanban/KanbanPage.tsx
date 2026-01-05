@@ -71,14 +71,14 @@ export function KanbanPage({ workspaceName, workspaceId }: KanbanPageProps) {
         {/* Main board area */}
         <div
           className={cn(
-            'flex-1 p-4 md:p-6 overflow-auto transition-all duration-200',
+            'flex-1 overflow-auto transition-all duration-200',
             selectedId ? 'pr-0 md:pr-[400px]' : ''
           )}
         >
           {/* Header row with search */}
           <div className="flex items-center justify-between mb-4 gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Kanban</h1>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Kanban</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {counts.total} commitments
               </p>

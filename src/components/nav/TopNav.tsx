@@ -21,7 +21,7 @@ export function TopNav({ user }: TopNavProps) {
 
   return (
     <>
-      <nav className="bg-white border-b border-zinc-200 sticky top-0 z-40">
+      <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 h-14">
           {/* Left: Logo + Workspace Selector */}
           <div className="flex items-center gap-3">
@@ -29,10 +29,10 @@ export function TopNav({ user }: TopNavProps) {
               href={`/workspace/${workspace}/execution`}
               className="flex items-center gap-2 hover:opacity-80"
             >
-              <div className="w-7 h-7 bg-zinc-900 rounded-md" />
-              <span className="font-semibold text-zinc-900">mentu</span>
+              <div className="w-7 h-7 bg-zinc-900 dark:bg-zinc-100 rounded-md" />
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">mentu</span>
             </Link>
-            <span className="text-zinc-300">·</span>
+            <span className="text-zinc-300 dark:text-zinc-600">·</span>
             <WorkspaceSelector onSettingsClick={() => setSettingsOpen(true)} />
           </div>
 
@@ -42,7 +42,7 @@ export function TopNav({ user }: TopNavProps) {
           {/* Right: User */}
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full" />
-            <span className="text-sm text-zinc-600">
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">
               {user?.name || user?.email || 'User'}
             </span>
           </div>

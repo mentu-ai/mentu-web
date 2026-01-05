@@ -35,7 +35,7 @@ export function WorkspaceSelector({ onSettingsClick }: WorkspaceSelectorProps) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2 py-1 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-md"
+        className="flex items-center gap-1.5 px-2 py-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
       >
         {currentWorkspace?.name}
         <ChevronDown className="w-4 h-4 opacity-50" />
@@ -44,9 +44,9 @@ export function WorkspaceSelector({ onSettingsClick }: WorkspaceSelectorProps) {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-zinc-200 rounded-xl shadow-lg z-50">
+          <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg z-50">
             <div className="p-2">
-              <div className="text-xs text-zinc-400 uppercase tracking-wider px-3 py-2">
+              <div className="text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-3 py-2">
                 Workspaces
               </div>
               {workspaces.map(ws => (
@@ -54,19 +54,19 @@ export function WorkspaceSelector({ onSettingsClick }: WorkspaceSelectorProps) {
                   key={ws.id}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-zinc-50',
-                    ws.current && 'bg-zinc-50'
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-zinc-50 dark:hover:bg-zinc-800',
+                    ws.current && 'bg-zinc-50 dark:bg-zinc-800'
                   )}
                 >
                   <div className={cn(
                     'w-8 h-8 rounded-lg flex items-center justify-center',
-                    ws.type === 'github' ? 'bg-zinc-900 text-white' : 'bg-zinc-100'
+                    ws.type === 'github' ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900' : 'bg-zinc-100 dark:bg-zinc-800'
                   )}>
-                    {ws.type === 'github' ? <Github className="w-4 h-4" /> : <Folder className="w-4 h-4 text-zinc-500" />}
+                    {ws.type === 'github' ? <Github className="w-4 h-4" /> : <Folder className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-zinc-900">{ws.name}</div>
-                    <div className="text-xs text-zinc-400 truncate">
+                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{ws.name}</div>
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500 truncate">
                       {ws.type === 'github' ? ws.repo : ws.path}
                     </div>
                   </div>
@@ -74,15 +74,15 @@ export function WorkspaceSelector({ onSettingsClick }: WorkspaceSelectorProps) {
                 </button>
               ))}
             </div>
-            <div className="border-t border-zinc-100 p-2">
+            <div className="border-t border-zinc-100 dark:border-zinc-800 p-2">
               <button
                 onClick={() => { setOpen(false); onSettingsClick(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50 rounded-lg"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg"
               >
                 <Settings className="w-4 h-4" />
                 Project Settings
               </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-zinc-50 rounded-lg">
+              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg">
                 <Plus className="w-4 h-4" />
                 Add Project
               </button>
