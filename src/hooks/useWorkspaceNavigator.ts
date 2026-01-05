@@ -6,7 +6,7 @@ import { useReducer, useCallback, useEffect, useRef } from 'react';
 // TYPES & CONSTANTS
 // =============================================================================
 
-export type NavigatorView = 'browse' | 'confirm' | 'deploying';
+export type NavigatorView = 'browse' | 'confirm' | 'deploying' | 'deployed';
 
 export interface DeployStage {
   id: string;
@@ -79,12 +79,7 @@ type NavigatorAction =
   | { type: 'ADD_LOG'; payload: DeployLog }
   | { type: 'RESET_LOGS' }
   | { type: 'DEPLOY_COMPLETE' }
-  | { type: 'GO_BACK' }
-  | { type: 'RESET' };
-
-export interface UseWorkspaceNavigatorOptions {
-  onDeployComplete?: (workspace: NavigatorWorkspace) => void;
-}
+  | { type: 'GO_BACK' };
 
 const initialState: NavigatorState = {
   view: 'browse',
@@ -127,6 +122,7 @@ function navigatorReducer(state: NavigatorState, action: NavigatorAction): Navig
     case 'DEPLOY_COMPLETE':
       return {
         ...state,
+        view: 'deployed',
         isDeploying: false,
         deployStage: DEPLOY_STAGES.length,
       };
@@ -135,10 +131,10 @@ function navigatorReducer(state: NavigatorState, action: NavigatorAction): Navig
       if (state.view === 'confirm') {
         return { ...state, view: 'browse', selectedWorkspace: null };
       }
+      if (state.view === 'deployed') {
+        return { ...state, view: 'browse', selectedWorkspace: null };
+      }
       return state;
-
-    case 'RESET':
-      return initialState;
 
     default:
       return state;
@@ -263,18 +259,11 @@ export const MOCK_DEPLOY_LOGS: DeployLog[] = [
 // HOOK
 // =============================================================================
 
-export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}) {
-  const { onDeployComplete } = options;
+export function useWorkspaceNavigator() {
   const [state, dispatch] = useReducer(navigatorReducer, initialState);
   const logIndexRef = useRef(0);
   const stageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onDeployCompleteRef = useRef(onDeployComplete);
-
-  // Keep callback ref updated
-  useEffect(() => {
-    onDeployCompleteRef.current = onDeployComplete;
-  }, [onDeployComplete]);
 
   // Clear timers on unmount
   useEffect(() => {
@@ -292,7 +281,6 @@ export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}
     }
 
     let currentStage = 0;
-    const selectedWorkspace = state.selectedWorkspace;
 
     const addLog = () => {
       if (logIndexRef.current < MOCK_DEPLOY_LOGS.length) {
@@ -313,18 +301,15 @@ export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}
         currentStage++;
         stageTimerRef.current = setTimeout(progressStage, DEPLOY_STAGES[currentStage - 1]?.duration || 800);
       } else {
-        // All stages complete, add remaining logs then call callback
+        // All stages complete, add remaining logs then transition
         const finishLogs = () => {
           if (logIndexRef.current < MOCK_DEPLOY_LOGS.length) {
             addLog();
             logTimerRef.current = setTimeout(finishLogs, 100);
           } else {
-            // Call onDeployComplete callback after small delay
+            // Transition to deployed state after small delay
             setTimeout(() => {
               dispatch({ type: 'DEPLOY_COMPLETE' });
-              if (selectedWorkspace && onDeployCompleteRef.current) {
-                onDeployCompleteRef.current(selectedWorkspace);
-              }
             }, 500);
           }
         };
@@ -338,7 +323,7 @@ export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}
       if (stageTimerRef.current) clearTimeout(stageTimerRef.current);
       if (logTimerRef.current) clearTimeout(logTimerRef.current);
     };
-  }, [state.view, state.selectedWorkspace]);
+  }, [state.view]);
 
   // Actions
   const selectWorkspace = useCallback((workspace: NavigatorWorkspace) => {
@@ -357,10 +342,6 @@ export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}
     dispatch({ type: 'GO_BACK' });
   }, []);
 
-  const reset = useCallback(() => {
-    dispatch({ type: 'RESET' });
-  }, []);
-
   return {
     // State
     view: state.view,
@@ -374,6 +355,5 @@ export function useWorkspaceNavigator(options: UseWorkspaceNavigatorOptions = {}
     confirmDeploy,
     cancel,
     back,
-    reset,
   };
 }
