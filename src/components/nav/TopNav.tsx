@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Terminal, Search, Settings, HelpCircle, LogOut, Info, Keyboard } from 'lucide-react';
+import { Terminal, Search, Settings, HelpCircle, LogOut, Info, Keyboard, MessageSquare } from 'lucide-react';
 import { useTerminal } from '@/contexts/TerminalContext';
+import { useAgentChatContext } from '@/contexts/AgentChatContext';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ export function TopNav() {
   const router = useRouter();
   const workspace = params.workspace as string;
   const { isOpen: terminalOpen, toggle: toggleTerminal } = useTerminal();
+  const { isOpen: chatOpen, toggle: toggleChat } = useAgentChatContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -135,6 +137,21 @@ export function TopNav() {
             title="Search (⌘K)"
           >
             <Search className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleChat}
+            className={cn(
+              'h-8 w-8 relative text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100',
+              chatOpen && 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+            )}
+            title="Toggle Agent Chat"
+          >
+            <MessageSquare className="h-4 w-4" />
+            {chatOpen && (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500" />
+            )}
           </Button>
           <Button
             variant="ghost"
