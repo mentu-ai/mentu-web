@@ -3,10 +3,26 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { planeConfig, planes } from '@/lib/navigation/planeConfig';
+import { planeConfig } from '@/lib/navigation/planeConfig';
 import { cn } from '@/lib/utils';
-import { ChevronRight, User, LogOut, FolderTree, Folder, File } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  User,
+  LogOut,
+  FolderOpen,
+  Wrench,
+  BookOpen,
+  LayoutList,
+  Folder,
+  File,
+  Settings,
+  Plus,
+  Check,
+  Loader2,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useWorkspaces } from '@/hooks/useWorkspace';
 
 interface PlaneSidebarProps {
   user?: {
@@ -14,6 +30,33 @@ interface PlaneSidebarProps {
     email?: string;
   };
 }
+
+// Section configuration with Windows-style icons
+const sectionConfig = {
+  execution: {
+    label: 'Execution',
+    icon: LayoutList,
+    description: 'Tasks & commitments',
+  },
+  files: {
+    label: 'Files',
+    icon: FolderOpen,
+    description: 'Workspace files',
+  },
+  capability: {
+    label: 'Capability',
+    icon: Wrench,
+    description: 'Tools & agents',
+  },
+  context: {
+    label: 'Context',
+    icon: BookOpen,
+    description: 'Knowledge & identity',
+  },
+};
+
+// Section order
+const sectionOrder = ['execution', 'files', 'capability', 'context'] as const;
 
 // Mock file structure - will be replaced with real synced directory
 const mockFileTree = [
@@ -46,9 +89,15 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
 
   // Track which sections are expanded
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    [currentPlane]: true, // Current plane expanded by default
+    execution: currentPlane === 'execution',
     files: false,
+    capability: currentPlane === 'capability',
+    context: currentPlane === 'context',
   });
+
+  // Workspace selector state
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const { data: workspaces, isLoading: workspacesLoading } = useWorkspaces();
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -63,116 +112,181 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
     router.push('/login');
   };
 
+  const handleSelectWorkspace = (workspaceName: string) => {
+    setWorkspaceOpen(false);
+    router.push(`/workspace/${workspaceName}/execution/kanban`);
+  };
+
+  const currentWorkspace = workspaces?.find(ws => ws.name === workspace);
+
   return (
     <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
-      {/* Plane sections */}
+      {/* Main sections */}
       <div className="flex-1 overflow-auto">
-        {planes.map((plane) => {
-          const config = planeConfig[plane];
-          const isExpanded = expandedSections[plane];
-          const basePath = `/workspace/${workspace}/${plane}`;
+        {sectionOrder.map((sectionKey) => {
+          const section = sectionConfig[sectionKey];
+          const isExpanded = expandedSections[sectionKey];
+          const Icon = section.icon;
+          const isPlane = sectionKey !== 'files';
+          const isCurrentPlane = isPlane && currentPlane === sectionKey;
 
           return (
-            <div key={plane} className="border-b border-zinc-200 dark:border-zinc-800">
+            <div key={sectionKey} className="border-b border-zinc-200 dark:border-zinc-800">
               {/* Section header */}
               <button
-                onClick={() => toggleSection(plane)}
+                onClick={() => toggleSection(sectionKey)}
                 className={cn(
-                  'w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider',
+                  'w-full flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wider',
                   'hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
-                  currentPlane === plane
+                  isCurrentPlane
                     ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800'
-                    : 'text-zinc-500 dark:text-zinc-400'
+                    : 'text-zinc-600 dark:text-zinc-400'
                 )}
               >
                 <ChevronRight
                   className={cn(
-                    'w-3 h-3 transition-transform',
+                    'w-3 h-3 transition-transform flex-shrink-0',
                     isExpanded && 'rotate-90'
                   )}
                 />
-                {config.label}
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 text-left">{section.label}</span>
               </button>
 
-              {/* Section items */}
+              {/* Section content */}
               {isExpanded && (
-                <nav className="pb-2">
-                  {config.views.map((view) => {
-                    const href = `${basePath}${view.href}`;
-                    const isActive = pathname === href || (view.href === '' && pathname === basePath);
+                <div className="pb-2">
+                  {sectionKey === 'files' ? (
+                    <FileTree items={mockFileTree} depth={0} />
+                  ) : (
+                    <nav>
+                      {planeConfig[sectionKey as 'execution' | 'capability' | 'context'].views.map((view) => {
+                        const basePath = `/workspace/${workspace}/${sectionKey}`;
+                        const href = `${basePath}${view.href}`;
+                        const isActive = pathname === href || (view.href === '' && pathname === basePath);
 
-                    return (
-                      <Link
-                        key={view.id}
-                        href={href}
-                        prefetch={false}
-                        className={cn(
-                          'block w-full pl-8 pr-3 py-1.5 text-sm transition-colors',
-                          isActive
-                            ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                            : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                        )}
-                      >
-                        {view.label}
-                      </Link>
-                    );
-                  })}
-                </nav>
+                        return (
+                          <Link
+                            key={view.id}
+                            href={href}
+                            prefetch={false}
+                            className={cn(
+                              'block w-full pl-9 pr-3 py-1.5 text-sm transition-colors',
+                              isActive
+                                ? 'bg-blue-600 text-white'
+                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            )}
+                          >
+                            {view.label}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+                  )}
+                </div>
               )}
             </div>
           );
         })}
+      </div>
 
-        {/* Files section */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800">
+      {/* Bottom section - Workspace & Account */}
+      <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-800">
+        {/* Workspace selector */}
+        <div className="p-2">
           <button
-            onClick={() => toggleSection('files')}
+            onClick={() => setWorkspaceOpen(!workspaceOpen)}
             className={cn(
-              'w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider',
-              'hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
-              'text-zinc-500 dark:text-zinc-400'
+              'w-full flex items-center gap-3 p-2 rounded-lg transition-colors',
+              'hover:bg-zinc-100 dark:hover:bg-zinc-800',
+              workspaceOpen && 'bg-zinc-100 dark:bg-zinc-800'
             )}
           >
-            <ChevronRight
-              className={cn(
-                'w-3 h-3 transition-transform',
-                expandedSections.files && 'rotate-90'
-              )}
-            />
-            <FolderTree className="w-3 h-3" />
-            Files
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+              {workspace.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                {currentWorkspace?.display_name || workspace}
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                {workspace}
+              </div>
+            </div>
+            <ChevronDown className={cn(
+              'w-4 h-4 text-zinc-400 transition-transform',
+              workspaceOpen && 'rotate-180'
+            )} />
           </button>
 
-          {expandedSections.files && (
-            <div className="pb-2 text-sm">
-              <FileTree items={mockFileTree} depth={0} />
+          {/* Workspace dropdown */}
+          {workspaceOpen && (
+            <div className="mt-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg overflow-hidden">
+              {workspacesLoading ? (
+                <div className="flex items-center justify-center py-3">
+                  <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                </div>
+              ) : workspaces && workspaces.length > 0 ? (
+                <div className="max-h-40 overflow-auto">
+                  {workspaces.map(ws => {
+                    const isCurrent = ws.name === workspace;
+                    return (
+                      <button
+                        key={ws.id}
+                        onClick={() => handleSelectWorkspace(ws.name)}
+                        className={cn(
+                          'w-full flex items-center gap-2 px-3 py-2 text-sm text-left',
+                          'hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors',
+                          isCurrent && 'bg-zinc-200 dark:bg-zinc-700'
+                        )}
+                      >
+                        <Folder className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                        <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">{ws.name}</span>
+                        {isCurrent && <Check className="w-4 h-4 text-green-500 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-3 text-center text-xs text-zinc-500">No workspaces</div>
+              )}
+              <div className="border-t border-zinc-200 dark:border-zinc-700 p-1">
+                <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded">
+                  <Settings className="w-3.5 h-3.5" />
+                  Settings
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded">
+                  <Plus className="w-3.5 h-3.5" />
+                  New Workspace
+                </button>
+              </div>
             </div>
           )}
         </div>
-      </div>
 
-      {/* User account section at bottom */}
-      <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-            <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-              {user?.name || 'User'}
+        {/* User account */}
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-2">
+          <div className="flex items-center gap-2 px-2 py-1.5">
+            <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+              <User className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-              {user?.email || ''}
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                {user?.name || 'User'}
+              </div>
+              <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                {user?.email || ''}
+              </div>
             </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 mt-1 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign out
-        </button>
       </div>
     </div>
   );
@@ -204,18 +318,18 @@ function FileTree({ items, depth }: { items: FileTreeItem[]; depth: number }) {
               <button
                 onClick={() => toggleFolder(item.name)}
                 className={cn(
-                  'w-full flex items-center gap-1.5 py-1 text-zinc-600 dark:text-zinc-400',
+                  'w-full flex items-center gap-1.5 py-1 text-sm text-zinc-600 dark:text-zinc-400',
                   'hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors'
                 )}
-                style={{ paddingLeft: `${depth * 12 + 24}px` }}
+                style={{ paddingLeft: `${depth * 12 + 28}px` }}
               >
                 <ChevronRight
                   className={cn(
-                    'w-3 h-3 transition-transform',
+                    'w-3 h-3 transition-transform flex-shrink-0',
                     expandedFolders[item.name] && 'rotate-90'
                   )}
                 />
-                <Folder className="w-3.5 h-3.5 text-zinc-400" />
+                <Folder className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
                 <span className="truncate">{item.name}</span>
               </button>
               {expandedFolders[item.name] && item.children && (
@@ -225,12 +339,12 @@ function FileTree({ items, depth }: { items: FileTreeItem[]; depth: number }) {
           ) : (
             <div
               className={cn(
-                'flex items-center gap-1.5 py-1 text-zinc-500 dark:text-zinc-400',
+                'flex items-center gap-1.5 py-1 text-sm text-zinc-500 dark:text-zinc-400',
                 'hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors'
               )}
-              style={{ paddingLeft: `${depth * 12 + 36}px` }}
+              style={{ paddingLeft: `${depth * 12 + 40}px` }}
             >
-              <File className="w-3.5 h-3.5 text-zinc-400" />
+              <File className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
               <span className="truncate">{item.name}</span>
             </div>
           )}
