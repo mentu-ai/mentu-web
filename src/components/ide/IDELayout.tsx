@@ -102,7 +102,7 @@ interface IDEEditorProps {
  */
 export function IDEEditor({ children, className }: IDEEditorProps) {
   return (
-    <main className={cn('flex-1 overflow-auto', className)}>
+    <main className={cn('flex-1 w-full min-w-0 overflow-auto', className)}>
       {children}
     </main>
   );
