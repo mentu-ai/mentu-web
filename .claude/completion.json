@@ -1,18 +1,20 @@
 {
   "version": "2.0",
-  "name": "AgentChatPanel",
+  "name": "AgentService",
   "tier": "T3",
   "required_files": [
-    "src/components/agent-chat/AgentChatPanel.tsx",
-    "src/components/agent-chat/ChatMessages.tsx",
-    "src/components/agent-chat/ChatMessage.tsx",
-    "src/components/agent-chat/ChatInput.tsx",
-    "src/components/agent-chat/ToolCallDisplay.tsx",
-    "src/components/agent-chat/index.ts",
-    "src/contexts/AgentChatContext.tsx",
-    "src/hooks/useAgentChat.ts",
-    "src/hooks/useAgentMessages.ts",
-    "src/lib/agent/types.ts"
+    "agent-service/src/index.ts",
+    "agent-service/src/websocket/server.ts",
+    "agent-service/src/websocket/handlers.ts",
+    "agent-service/src/claude/client.ts",
+    "agent-service/src/claude/streaming.ts",
+    "agent-service/src/tools/registry.ts",
+    "agent-service/src/tools/mentu-tools.ts",
+    "agent-service/src/db/supabase.ts",
+    "agent-service/src/db/conversations.ts",
+    "agent-service/src/db/messages.ts",
+    "agent-service/package.json",
+    "agent-service/tsconfig.json"
   ],
   "checks": {
     "tsc": true,

@@ -20,6 +20,31 @@ const RECONNECT_DELAY = 2000; // Wait 2 seconds before reconnecting
 const MAX_RECONNECT_ATTEMPTS = 10;
 const SESSION_STORAGE_KEY = 'mentu_terminal_session';
 
+// Terminal theme - grey zinc colors
+const TERMINAL_THEME = {
+  background: '#09090b', // zinc-950 - true dark grey
+  foreground: '#fafafa', // zinc-50
+  cursor: '#fafafa',
+  cursorAccent: '#09090b',
+  selectionBackground: '#3f3f46', // zinc-700
+  black: '#09090b', // zinc-950
+  red: '#ef4444', // red-500
+  green: '#22c55e', // green-500
+  yellow: '#eab308', // yellow-500
+  blue: '#3b82f6', // blue-500
+  magenta: '#a855f7', // purple-500
+  cyan: '#06b6d4', // cyan-500
+  white: '#fafafa', // zinc-50
+  brightBlack: '#71717a', // zinc-500
+  brightRed: '#f87171', // red-400
+  brightGreen: '#4ade80', // green-400
+  brightYellow: '#facc15', // yellow-400
+  brightBlue: '#60a5fa', // blue-400
+  brightMagenta: '#c084fc', // purple-400
+  brightCyan: '#22d3ee', // cyan-400
+  brightWhite: '#ffffff', // white
+};
+
 // Generate or retrieve session ID for persistent sessions
 function getOrCreateSessionId(sessionKey?: string): string {
   const storageKey = sessionKey ? `${SESSION_STORAGE_KEY}_${sessionKey}` : SESSION_STORAGE_KEY;
@@ -338,6 +363,14 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
     };
   }, []);
 
+  // Effect to update theme on existing terminal (handles hot reload and theme changes)
+  useEffect(() => {
+    const term = terminalInstanceRef.current;
+    if (term) {
+      term.options.theme = TERMINAL_THEME;
+    }
+  });
+
   // Main effect for terminal initialization
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -346,31 +379,12 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
       cursorBlink: true,
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#09090b', // zinc-950 - true dark grey
-        foreground: '#fafafa', // zinc-50
-        cursor: '#fafafa',
-        cursorAccent: '#09090b',
-        selectionBackground: '#3f3f46', // zinc-700
-        black: '#09090b', // zinc-950
-        red: '#ef4444', // red-500
-        green: '#22c55e', // green-500
-        yellow: '#eab308', // yellow-500
-        blue: '#3b82f6', // blue-500
-        magenta: '#a855f7', // purple-500
-        cyan: '#06b6d4', // cyan-500
-        white: '#fafafa', // zinc-50
-        brightBlack: '#71717a', // zinc-500
-        brightRed: '#f87171', // red-400
-        brightGreen: '#4ade80', // green-400
-        brightYellow: '#facc15', // yellow-400
-        brightBlue: '#60a5fa', // blue-400
-        brightMagenta: '#c084fc', // purple-400
-        brightCyan: '#22d3ee', // cyan-400
-        brightWhite: '#ffffff', // white
-      },
+      theme: TERMINAL_THEME,
       allowProposedApi: true,
     });
+
+    // Force apply theme (ensures it takes effect)
+    term.options.theme = TERMINAL_THEME;
 
     const fitAddon = new FitAddon();
     fitAddonRef.current = fitAddon;
