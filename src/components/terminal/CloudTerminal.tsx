@@ -347,27 +347,27 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: {
-        background: '#18181b', // zinc-900
-        foreground: '#e4e4e7', // zinc-200
-        cursor: '#e4e4e7',
-        cursorAccent: '#18181b',
+        background: '#09090b', // zinc-950 - true dark grey
+        foreground: '#fafafa', // zinc-50
+        cursor: '#fafafa',
+        cursorAccent: '#09090b',
         selectionBackground: '#3f3f46', // zinc-700
-        black: '#27272a', // zinc-800
-        red: '#f87171', // red-400
-        green: '#4ade80', // green-400
-        yellow: '#facc15', // yellow-400
-        blue: '#60a5fa', // blue-400
-        magenta: '#c084fc', // purple-400
-        cyan: '#22d3ee', // cyan-400
-        white: '#e4e4e7', // zinc-200
-        brightBlack: '#52525b', // zinc-600
-        brightRed: '#fca5a5', // red-300
-        brightGreen: '#86efac', // green-300
-        brightYellow: '#fde047', // yellow-300
-        brightBlue: '#93c5fd', // blue-300
-        brightMagenta: '#d8b4fe', // purple-300
-        brightCyan: '#67e8f9', // cyan-300
-        brightWhite: '#fafafa', // zinc-50
+        black: '#09090b', // zinc-950
+        red: '#ef4444', // red-500
+        green: '#22c55e', // green-500
+        yellow: '#eab308', // yellow-500
+        blue: '#3b82f6', // blue-500
+        magenta: '#a855f7', // purple-500
+        cyan: '#06b6d4', // cyan-500
+        white: '#fafafa', // zinc-50
+        brightBlack: '#71717a', // zinc-500
+        brightRed: '#f87171', // red-400
+        brightGreen: '#4ade80', // green-400
+        brightYellow: '#facc15', // yellow-400
+        brightBlue: '#60a5fa', // blue-400
+        brightMagenta: '#c084fc', // purple-400
+        brightCyan: '#22d3ee', // cyan-400
+        brightWhite: '#ffffff', // white
       },
       allowProposedApi: true,
     });
@@ -464,11 +464,11 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
   };
 
   return (
-    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900 overflow-hidden`}>
+    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-950 overflow-hidden`}>
       {/* Terminal area */}
       <div ref={terminalRef} className="flex-1 min-h-0 min-w-0 overflow-hidden" />
       {/* Status bar */}
-      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-800 border-t border-zinc-700">
+      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-900 border-t border-zinc-800">
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor()}`}>
           {getStatusDisplay()}
         </span>
