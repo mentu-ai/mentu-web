@@ -146,7 +146,7 @@ export function useAgentChat() {
     // Create a conversation if we don't have one
     if (!conversationIdRef.current) {
       const newConversation: Conversation = {
-        id: `conv_${Date.now()}`,
+        id: crypto.randomUUID(),
         workspace_id: 'default',
         title: 'New Chat',
         created_at: new Date().toISOString(),
