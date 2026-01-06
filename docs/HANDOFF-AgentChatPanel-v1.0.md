@@ -111,7 +111,7 @@ cd /Users/rashid/Desktop/Workspaces/mentu-web
 cat .mentu/manifest.yaml | grep actor
 
 # Claim commitment (actor auto-resolved)
-mentu claim cmt_XXXXXXXX --author-type executor
+mentu claim cmt_0c93945f --author-type executor
 
 # Capture progress (actor auto-resolved, role declared)
 mentu capture "{Progress}" --kind execution-progress --author-type executor
@@ -1122,7 +1122,7 @@ The RESULT document MUST include:
 mentu capture "Created RESULT-AgentChatPanel: Chat UI components for agent interaction" \
   --kind result-document \
   --path docs/RESULT-AgentChatPanel-v1.0.md \
-  --refs cmt_XXXXXXXX \
+  --refs cmt_0c93945f \
   --author-type executor
 ```
 
@@ -1130,15 +1130,15 @@ mentu capture "Created RESULT-AgentChatPanel: Chat UI components for agent inter
 
 ```yaml
 mentu:
-  commitment: cmt_XXXXXXXX
-  evidence: mem_YYYYYYYY
+  commitment: cmt_0c93945f
+  evidence: mem_YYYYYYYY  # ← Update with actual evidence ID from Step 2
   status: in_review
 ```
 
 ### Step 4: Submit with Evidence
 
 ```bash
-mentu submit cmt_XXXXXXXX \
+mentu submit cmt_0c93945f \
   --summary "AgentChatPanel: Chat UI with WebSocket hook, message components, context provider" \
   --include-files
 ```

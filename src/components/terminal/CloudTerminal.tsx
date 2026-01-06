@@ -11,7 +11,7 @@ interface CloudTerminalProps {
 }
 
 // The command to auto-start Claude agent
-const AGENT_COMMAND = 'claude --dangerously-skip-permissions "Read CLAUDE.md for instructions, you are an agent inside Mentu Web Platform."';
+const AGENT_COMMAND = 'claude --dangerously-skip-permissions';
 
 export function CloudTerminal({ className, autoStartAgent = true }: CloudTerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);

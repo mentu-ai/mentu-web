@@ -70,14 +70,14 @@ Done when:
 1. Read .mentu/manifest.yaml for your actor identity
 2. Read docs/HANDOFF-AgentChatPanel-v1.0.md (complete instructions)
 3. Update .claude/completion.json with provided contract
-4. Claim commitment: mentu claim cmt_XXX --author-type executor
+4. Claim commitment: mentu claim cmt_0c93945f --author-type executor
 5. Create files in order specified in HANDOFF
 6. Verify CloudTerminal unchanged: git diff src/components/terminal/
 7. Run: npm run build
 8. Run: npx tsc --noEmit
 9. Create RESULT document: docs/RESULT-AgentChatPanel-v1.0.md
 10. Capture evidence: mentu capture 'RESULT-AgentChatPanel created' --kind result-document
-11. Submit: mentu submit cmt_XXX --summary 'AgentChatPanel UI components' --include-files
+11. Submit: mentu submit cmt_0c93945f --summary 'AgentChatPanel UI components' --include-files
 
 # CONSTRAINTS
 - DO NOT modify src/components/terminal/*
@@ -203,7 +203,7 @@ git diff src/contexts/TerminalContext.tsx
 git diff src/components/ide/TerminalPanel.tsx
 
 # Verify commitment state
-mentu show cmt_XXX
+mentu show cmt_0c93945f
 ```
 
 ---
