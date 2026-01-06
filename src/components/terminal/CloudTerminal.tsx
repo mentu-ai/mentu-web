@@ -20,14 +20,14 @@ const RECONNECT_DELAY = 2000; // Wait 2 seconds before reconnecting
 const MAX_RECONNECT_ATTEMPTS = 10;
 const SESSION_STORAGE_KEY = 'mentu_terminal_session';
 
-// Terminal theme - grey zinc colors
+// Terminal theme - lighter grey zinc colors
 const TERMINAL_THEME = {
-  background: '#09090b', // zinc-950 - true dark grey
+  background: '#27272a', // zinc-800 - visible grey
   foreground: '#fafafa', // zinc-50
   cursor: '#fafafa',
-  cursorAccent: '#09090b',
-  selectionBackground: '#3f3f46', // zinc-700
-  black: '#09090b', // zinc-950
+  cursorAccent: '#27272a',
+  selectionBackground: '#52525b', // zinc-600
+  black: '#18181b', // zinc-900
   red: '#ef4444', // red-500
   green: '#22c55e', // green-500
   yellow: '#eab308', // yellow-500
@@ -35,7 +35,7 @@ const TERMINAL_THEME = {
   magenta: '#a855f7', // purple-500
   cyan: '#06b6d4', // cyan-500
   white: '#fafafa', // zinc-50
-  brightBlack: '#71717a', // zinc-500
+  brightBlack: '#a1a1aa', // zinc-400
   brightRed: '#f87171', // red-400
   brightGreen: '#4ade80', // green-400
   brightYellow: '#facc15', // yellow-400
@@ -478,11 +478,11 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
   };
 
   return (
-    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-950 overflow-hidden`}>
+    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-800 overflow-hidden`}>
       {/* Terminal area */}
       <div ref={terminalRef} className="flex-1 min-h-0 min-w-0 overflow-hidden" />
       {/* Status bar */}
-      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-900 border-t border-zinc-800">
+      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-700 border-t border-zinc-600">
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor()}`}>
           {getStatusDisplay()}
         </span>

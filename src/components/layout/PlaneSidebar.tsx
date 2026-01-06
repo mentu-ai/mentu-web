@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { planeConfig } from '@/lib/navigation/planeConfig';
@@ -99,25 +99,28 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const { data: workspaces, isLoading: workspacesLoading } = useWorkspaces();
 
-  const toggleSection = (section: string) => {
+  const toggleSection = useCallback((section: string) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section],
     }));
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
-  };
+  }, [router]);
 
-  const handleSelectWorkspace = (workspaceName: string) => {
+  const handleSelectWorkspace = useCallback((workspaceName: string) => {
     setWorkspaceOpen(false);
     router.push(`/workspace/${workspaceName}/execution/kanban`);
-  };
+  }, [router]);
 
-  const currentWorkspace = workspaces?.find(ws => ws.name === workspace);
+  const currentWorkspace = useMemo(() =>
+    workspaces?.find(ws => ws.name === workspace),
+    [workspaces, workspace]
+  );
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
