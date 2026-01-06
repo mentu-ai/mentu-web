@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Terminal, Search, Settings, HelpCircle, LogOut, Info, Keyboard } from 'lucide-react';
 import { useTerminal } from '@/contexts/TerminalContext';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import { CommandPalette } from './CommandPalette';
 
 export function TopNav() {
   const params = useParams();
@@ -14,6 +15,20 @@ export function TopNav() {
   const workspace = params.workspace as string;
   const { isOpen: terminalOpen, toggle: toggleTerminal } = useTerminal();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  // Global keyboard shortcut for command palette (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -115,6 +130,7 @@ export function TopNav() {
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => setCommandPaletteOpen(true)}
             className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             title="Search (⌘K)"
           >
@@ -137,6 +153,12 @@ export function TopNav() {
           </Button>
         </div>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+      />
     </nav>
   );
 }
