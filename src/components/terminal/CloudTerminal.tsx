@@ -32,9 +32,11 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
 
-    // Delay initial fit to ensure container has dimensions
+    // Delay initial fit to ensure container has dimensions (double RAF for layout)
     requestAnimationFrame(() => {
-      fitAddon.fit();
+      requestAnimationFrame(() => {
+        fitAddon.fit();
+      });
     });
 
     terminalInstanceRef.current = term;
