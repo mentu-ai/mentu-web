@@ -192,8 +192,62 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
 
       {/* Bottom section - Workspace & Account */}
       <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-800">
-        {/* Workspace selector */}
-        <div className="p-2">
+        {/* Workspace selector - relative container for dropdown overlay */}
+        <div className="relative p-2">
+          {/* Dropdown overlay - positioned above the button */}
+          {workspaceOpen && (
+            <>
+              {/* Backdrop to close on click outside */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setWorkspaceOpen(false)}
+              />
+              <div className="absolute bottom-full left-2 right-2 mb-1 z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                {workspacesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                  </div>
+                ) : workspaces && workspaces.length > 0 ? (
+                  <div className="max-h-48 overflow-auto py-1">
+                    {workspaces.map(ws => {
+                      const isCurrent = ws.name === workspace;
+                      return (
+                        <button
+                          key={ws.id}
+                          onClick={() => handleSelectWorkspace(ws.name)}
+                          className={cn(
+                            'w-full flex items-center gap-2 px-3 py-2 text-sm text-left',
+                            'hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors',
+                            isCurrent && 'bg-blue-50 dark:bg-blue-900/20'
+                          )}
+                        >
+                          <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                            {ws.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">{ws.display_name || ws.name}</span>
+                          {isCurrent && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-xs text-zinc-500">No workspaces</div>
+                )}
+                <div className="border-t border-zinc-200 dark:border-zinc-700 p-1">
+                  <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded transition-colors">
+                    <Settings className="w-4 h-4" />
+                    Workspace Settings
+                  </button>
+                  <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded transition-colors">
+                    <Plus className="w-4 h-4" />
+                    New Workspace
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Workspace button - stays in place */}
           <button
             onClick={() => setWorkspaceOpen(!workspaceOpen)}
             className={cn(
@@ -218,50 +272,6 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
               workspaceOpen && 'rotate-180'
             )} />
           </button>
-
-          {/* Workspace dropdown */}
-          {workspaceOpen && (
-            <div className="mt-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg overflow-hidden">
-              {workspacesLoading ? (
-                <div className="flex items-center justify-center py-3">
-                  <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                </div>
-              ) : workspaces && workspaces.length > 0 ? (
-                <div className="max-h-40 overflow-auto">
-                  {workspaces.map(ws => {
-                    const isCurrent = ws.name === workspace;
-                    return (
-                      <button
-                        key={ws.id}
-                        onClick={() => handleSelectWorkspace(ws.name)}
-                        className={cn(
-                          'w-full flex items-center gap-2 px-3 py-2 text-sm text-left',
-                          'hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors',
-                          isCurrent && 'bg-zinc-200 dark:bg-zinc-700'
-                        )}
-                      >
-                        <Folder className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-                        <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">{ws.name}</span>
-                        {isCurrent && <Check className="w-4 h-4 text-green-500 flex-shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-3 text-center text-xs text-zinc-500">No workspaces</div>
-              )}
-              <div className="border-t border-zinc-200 dark:border-zinc-700 p-1">
-                <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded">
-                  <Settings className="w-3.5 h-3.5" />
-                  Settings
-                </button>
-                <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded">
-                  <Plus className="w-3.5 h-3.5" />
-                  New Workspace
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* User account */}
