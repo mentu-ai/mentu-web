@@ -135,9 +135,9 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
   }, []);
 
   return (
-    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900`}>
+    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900 overflow-hidden`}>
       {/* Terminal area */}
-      <div ref={terminalRef} className="flex-1 min-h-0 overflow-hidden" />
+      <div ref={terminalRef} className="flex-1 min-h-0 min-w-0 overflow-hidden" />
       {/* Status bar */}
       <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-800/50 border-t border-zinc-800">
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${

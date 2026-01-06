@@ -62,7 +62,7 @@ export function TerminalPanel() {
   if (!isOpen) {
     return (
       <div
-        className="flex-shrink-0 w-full min-w-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700"
+        className="flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700 overflow-hidden"
         style={{
           marginRight: rightPanelOpen ? rightPanelWidth : 0,
           contain: 'layout style',
@@ -86,7 +86,7 @@ export function TerminalPanel() {
   return (
     <div
       ref={containerRef}
-      className="flex-shrink-0 w-full min-w-0 flex flex-col bg-zinc-900 border-t border-zinc-700"
+      className="flex-shrink-0 w-full min-w-0 max-w-full flex flex-col bg-zinc-900 border-t border-zinc-700 overflow-hidden"
       style={{
         height,
         marginRight: rightPanelOpen ? rightPanelWidth : 0,
