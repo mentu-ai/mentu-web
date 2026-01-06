@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Terminal, Search, Settings, HelpCircle, LogOut, Info, Keyboard, MessageSquare } from 'lucide-react';
 import { useTerminal } from '@/contexts/TerminalContext';
@@ -32,17 +32,29 @@ export function TopNav() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setMenuOpen(false);
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
-  };
+  }, [router]);
 
-  const handleNavigate = (path: string) => {
+  const handleNavigate = useCallback((path: string) => {
     setMenuOpen(false);
     router.push(path);
-  };
+  }, [router]);
+
+  const openCommandPalette = useCallback(() => {
+    setCommandPaletteOpen(true);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    setMenuOpen(prev => !prev);
+  }, []);
 
   return (
     <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40">
@@ -50,9 +62,9 @@ export function TopNav() {
         {/* Left: Logo with Apple-style menu */}
         <div className="relative">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={toggleMenu}
             className={cn(
-              'flex items-center gap-2 px-2 py-1 -ml-2 rounded-md transition-colors',
+              'flex items-center gap-2 px-2 py-1 -ml-2 rounded-md',
               'hover:bg-zinc-100 dark:hover:bg-zinc-800',
               menuOpen && 'bg-zinc-100 dark:bg-zinc-800'
             )}
@@ -66,7 +78,7 @@ export function TopNav() {
             <>
               <div
                 className="fixed inset-0 z-40"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
               />
               <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 py-1 z-50">
                 <button
@@ -132,7 +144,7 @@ export function TopNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCommandPaletteOpen(true)}
+            onClick={openCommandPalette}
             className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             title="Search (⌘K)"
           >

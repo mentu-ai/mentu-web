@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 interface TerminalContextValue {
   isOpen: boolean;
@@ -29,8 +29,12 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
     setHeightState(Math.min(Math.max(newHeight, MIN_HEIGHT), MAX_HEIGHT));
   }, []);
 
+  const value = useMemo(() => ({
+    isOpen, height, toggle, open, close, setHeight
+  }), [isOpen, height, toggle, open, close, setHeight]);
+
   return (
-    <TerminalContext.Provider value={{ isOpen, height, toggle, open, close, setHeight }}>
+    <TerminalContext.Provider value={value}>
       {children}
     </TerminalContext.Provider>
   );

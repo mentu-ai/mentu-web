@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import type { ChatMessage, Conversation, ConnectionStatus } from '@/lib/agent/types';
 
 interface AgentChatContextValue {
@@ -52,23 +52,29 @@ export function AgentChatProvider({ children }: { children: ReactNode }) {
     ));
   }, []);
 
+  const value = useMemo(() => ({
+    isOpen,
+    toggle,
+    open,
+    close,
+    status,
+    setStatus,
+    conversation,
+    setConversation,
+    messages,
+    setMessages,
+    addMessage,
+    updateMessage,
+    isStreaming,
+    setIsStreaming,
+  }), [
+    isOpen, toggle, open, close,
+    status, conversation, messages, isStreaming,
+    addMessage, updateMessage
+  ]);
+
   return (
-    <AgentChatContext.Provider value={{
-      isOpen,
-      toggle,
-      open,
-      close,
-      status,
-      setStatus,
-      conversation,
-      setConversation,
-      messages,
-      setMessages,
-      addMessage,
-      updateMessage,
-      isStreaming,
-      setIsStreaming,
-    }}>
+    <AgentChatContext.Provider value={value}>
       {children}
     </AgentChatContext.Provider>
   );
