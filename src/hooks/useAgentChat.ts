@@ -8,18 +8,21 @@ import type {
   WSToolUse,
   WSToolResult,
   WSError,
-  ChatMessage
+  ChatMessage,
+  Conversation
 } from '@/lib/agent/types';
 
-const AGENT_WS_URL = process.env.NEXT_PUBLIC_AGENT_WS_URL || 'wss://api.mentu.ai/agent';
-const RECONNECT_DELAY = 1000;
+const AGENT_WS_URL = process.env.NEXT_PUBLIC_AGENT_WS_URL || 'ws://localhost:8080/agent';
+const RECONNECT_DELAY = 2000;
 const MAX_RECONNECT_DELAY = 30000;
 
 export function useAgentChat() {
   const {
+    isOpen,
     status,
     setStatus,
     conversation,
+    setConversation,
     addMessage,
     updateMessage,
     setIsStreaming,
@@ -29,6 +32,12 @@ export function useAgentChat() {
   const reconnectAttempts = useRef(0);
   const currentMessageIdRef = useRef<string | null>(null);
   const currentContentRef = useRef('');
+  const conversationIdRef = useRef<string | null>(conversation?.id || null);
+
+  // Keep ref in sync with state
+  if (conversation?.id && conversationIdRef.current !== conversation.id) {
+    conversationIdRef.current = conversation.id;
+  }
 
   const handleMessage = useCallback((msg: WSMessage) => {
     switch (msg.type) {
@@ -115,43 +124,65 @@ export function useAgentChat() {
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    if (wsRef.current?.readyState === WebSocket.CONNECTING) return;
 
     setStatus('connecting');
 
-    const ws = new WebSocket(AGENT_WS_URL);
-    wsRef.current = ws;
+    // Create a conversation if we don't have one
+    if (!conversationIdRef.current) {
+      const newConversation: Conversation = {
+        id: `conv_${Date.now()}`,
+        workspace_id: 'default',
+        title: 'New Chat',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      conversationIdRef.current = newConversation.id;
+      setConversation(newConversation);
+    }
 
-    ws.onopen = () => {
-      setStatus('connected');
-      reconnectAttempts.current = 0;
-    };
+    try {
+      const ws = new WebSocket(AGENT_WS_URL);
+      wsRef.current = ws;
 
-    ws.onmessage = (event) => {
-      try {
-        const msg: WSMessage = JSON.parse(event.data);
-        handleMessage(msg);
-      } catch (e) {
-        console.error('Failed to parse WebSocket message:', e);
-      }
-    };
+      ws.onopen = () => {
+        setStatus('connected');
+        reconnectAttempts.current = 0;
+      };
 
-    ws.onclose = () => {
-      setStatus('disconnected');
-      wsRef.current = null;
+      ws.onmessage = (event) => {
+        try {
+          const msg: WSMessage = JSON.parse(event.data);
+          handleMessage(msg);
+        } catch (e) {
+          console.error('Failed to parse WebSocket message:', e);
+        }
+      };
 
-      // Exponential backoff reconnect
-      const delay = Math.min(
-        RECONNECT_DELAY * Math.pow(2, reconnectAttempts.current),
-        MAX_RECONNECT_DELAY
-      );
-      reconnectAttempts.current++;
-      setTimeout(connect, delay);
-    };
+      ws.onclose = () => {
+        setStatus('disconnected');
+        wsRef.current = null;
 
-    ws.onerror = () => {
+        // Only reconnect if panel is still open
+        if (isOpen) {
+          const delay = Math.min(
+            RECONNECT_DELAY * Math.pow(2, reconnectAttempts.current),
+            MAX_RECONNECT_DELAY
+          );
+          reconnectAttempts.current++;
+          setTimeout(connect, delay);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setStatus('error');
+      };
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error);
       setStatus('error');
-    };
-  }, [setStatus, handleMessage]);
+    }
+  }, [setStatus, handleMessage, setConversation, isOpen]);
 
   const sendMessage = useCallback((content: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -159,7 +190,8 @@ export function useAgentChat() {
       return;
     }
 
-    if (!conversation) {
+    const convId = conversationIdRef.current;
+    if (!convId) {
       console.error('No active conversation');
       return;
     }
@@ -167,7 +199,7 @@ export function useAgentChat() {
     // Add user message to UI immediately
     const userMsg: ChatMessage = {
       id: `user_${Date.now()}`,
-      conversation_id: conversation.id,
+      conversation_id: convId,
       role: 'user',
       content,
       timestamp: new Date().toISOString(),
@@ -177,10 +209,10 @@ export function useAgentChat() {
     // Send to server
     wsRef.current.send(JSON.stringify({
       type: 'user_message',
-      conversation_id: conversation.id,
+      conversation_id: convId,
       data: { content },
     }));
-  }, [conversation, addMessage]);
+  }, [addMessage]);
 
   const disconnect = useCallback(() => {
     if (wsRef.current) {
@@ -189,16 +221,19 @@ export function useAgentChat() {
     }
   }, []);
 
-  // Auto-connect when conversation is set
+  // Auto-connect when panel opens
   useEffect(() => {
-    if (conversation && status === 'disconnected') {
+    if (isOpen && status === 'disconnected') {
       connect();
     }
 
-    return () => {
-      // Don't disconnect on unmount - let it reconnect
-    };
-  }, [conversation, status, connect]);
+    // Disconnect when panel closes
+    if (!isOpen && wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+      reconnectAttempts.current = 0;
+    }
+  }, [isOpen, status, connect]);
 
   return {
     status,
