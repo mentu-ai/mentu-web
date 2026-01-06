@@ -10,8 +10,10 @@ interface CloudTerminalProps {
 }
 
 export function CloudTerminal({ className }: CloudTerminalProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstanceRef = useRef<Terminal | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
@@ -20,26 +22,37 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
 
     const term = new Terminal({
       cursorBlink: true,
-      fontSize: 14,
-      fontFamily: 'Menlo, Monaco, monospace',
+      fontSize: 13,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: {
-        background: '#1a1a1a',
-        foreground: '#f0f0f0',
+        background: '#18181b', // zinc-900
+        foreground: '#e4e4e7', // zinc-200
+        cursor: '#e4e4e7',
+        selectionBackground: '#3f3f46', // zinc-700
       },
+      allowProposedApi: true,
     });
 
     const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
 
-    // Delay initial fit to ensure container has dimensions (double RAF for layout)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        fitAddon.fit();
-      });
-    });
-
     terminalInstanceRef.current = term;
+
+    // Fit after a short delay to ensure container has dimensions
+    const fitTerminal = () => {
+      if (fitAddon && terminalRef.current) {
+        try {
+          fitAddon.fit();
+        } catch {
+          // Ignore fit errors during initialization
+        }
+      }
+    };
+
+    // Initial fit with delay
+    setTimeout(fitTerminal, 100);
 
     // Connect WebSocket
     const wsUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'wss://api.mentu.ai/terminal';
@@ -48,6 +61,7 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
     socket.onopen = () => {
       setStatus('connected');
       term.write('Connected to cloud terminal\r\n');
+      fitTerminal();
 
       // Send initial resize
       socket.send(JSON.stringify({
@@ -87,29 +101,32 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
       }
     });
 
-    // Handle resize
+    // Handle resize with debounce
+    let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
-      fitAddon.fit();
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-          type: 'resize',
-          cols: term.cols,
-          rows: term.rows,
-        }));
-      }
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        fitTerminal();
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({
+            type: 'resize',
+            cols: term.cols,
+            rows: term.rows,
+          }));
+        }
+      }, 50);
     };
 
     window.addEventListener('resize', handleResize);
 
-    // Watch for container size changes (e.g., when panel is resized)
-    const resizeObserver = new ResizeObserver(() => {
-      handleResize();
-    });
-    if (terminalRef.current) {
-      resizeObserver.observe(terminalRef.current);
+    // Watch container for size changes
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
     }
 
     return () => {
+      clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
       socket.close();
@@ -118,15 +135,15 @@ export function CloudTerminal({ className }: CloudTerminalProps) {
   }, []);
 
   return (
-    <div className={`${className} relative`}>
-      {/* Terminal fills entire container */}
-      <div ref={terminalRef} className="absolute inset-0 bottom-6" />
-      {/* Status bar at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-6 flex items-center justify-end px-3 bg-zinc-900 border-t border-zinc-800">
-        <span className={`text-xs px-2 py-0.5 rounded ${
-          status === 'connected' ? 'bg-green-900 text-green-300' :
-          status === 'connecting' ? 'bg-yellow-900 text-yellow-300' :
-          'bg-red-900 text-red-300'
+    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900`}>
+      {/* Terminal area */}
+      <div ref={terminalRef} className="flex-1 min-h-0 overflow-hidden" />
+      {/* Status bar */}
+      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-800/50 border-t border-zinc-800">
+        <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+          status === 'connected' ? 'bg-green-900/50 text-green-400' :
+          status === 'connecting' ? 'bg-yellow-900/50 text-yellow-400' :
+          'bg-red-900/50 text-red-400'
         }`}>
           {status}
         </span>

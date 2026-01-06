@@ -4,7 +4,14 @@ import { TopNav } from '@/components/nav/TopNav';
 import { PlaneSidebar } from '@/components/layout/PlaneSidebar';
 import { createClient } from '@/lib/supabase/server';
 import { TerminalProvider } from '@/contexts/TerminalContext';
-import { ResizableTerminalPanel } from '@/components/terminal/ResizableTerminalPanel';
+import { TerminalPanel } from '@/components/ide/TerminalPanel';
+import {
+  IDELayout,
+  IDEBody,
+  IDEPanel,
+  IDEMain,
+  IDEEditor,
+} from '@/components/ide/IDELayout';
 
 interface PlaneLayoutProps {
   children: React.ReactNode;
@@ -25,18 +32,28 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
 
   return (
     <TerminalProvider>
-      <div className="h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950">
+      <IDELayout>
         <TopNav />
-        <div className="flex flex-1 overflow-hidden">
-          <PlaneSidebar user={user ? { email: user.email } : undefined} />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-auto p-4 md:p-6">
+        <IDEBody>
+          {/* Left Panel - Navigation */}
+          <IDEPanel position="left" width={192}>
+            <PlaneSidebar user={user ? { email: user.email } : undefined} />
+          </IDEPanel>
+
+          {/* Main Area - Editor + Terminal */}
+          <IDEMain>
+            <IDEEditor className="p-4 md:p-6 bg-zinc-50 dark:bg-zinc-950">
               {children}
-            </main>
-            <ResizableTerminalPanel />
-          </div>
-        </div>
-      </div>
+            </IDEEditor>
+            <TerminalPanel />
+          </IDEMain>
+
+          {/* Right Panel - Future: File Explorer */}
+          {/* <IDEPanel position="right" width={280}>
+            <FileExplorer />
+          </IDEPanel> */}
+        </IDEBody>
+      </IDELayout>
     </TerminalProvider>
   );
 }

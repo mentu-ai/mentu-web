@@ -33,8 +33,8 @@ export function SettingsSidebar({ workspaceName, user }: SettingsSidebarProps) {
   };
 
   return (
-    <aside className="w-56 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 min-h-[calc(100vh-3.5rem)] flex flex-col">
-      <div className="flex-1 p-4">
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
+      <div className="flex-1 overflow-auto p-4">
         <Link
           href={`/workspace/${workspaceName}/execution`}
           prefetch={false}
@@ -96,6 +96,6 @@ export function SettingsSidebar({ workspaceName, user }: SettingsSidebarProps) {
           Sign out
         </button>
       </div>
-    </aside>
+    </div>
   );
 }

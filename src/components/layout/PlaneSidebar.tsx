@@ -32,7 +32,7 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
   };
 
   return (
-    <aside className="w-48 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 min-h-[calc(100vh-3.5rem)] flex flex-col">
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 p-3">
         {config.views.map((view) => {
@@ -80,6 +80,6 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
           Sign out
         </button>
       </div>
-    </aside>
+    </div>
   );
 }
