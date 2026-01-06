@@ -1,20 +1,18 @@
 {
   "version": "2.0",
-  "name": "ThreePlanesNavigation-W1",
+  "name": "AgentChatPanel",
   "tier": "T3",
   "required_files": [
-    "src/components/nav/TopNav.tsx",
-    "src/components/nav/WorkspaceSelector.tsx",
-    "src/components/nav/PlaneTabs.tsx",
-    "src/components/modals/ProjectSettingsModal.tsx",
-    "src/components/layout/PlaneSidebar.tsx",
-    "src/components/shared/PlaneCard.tsx",
-    "src/components/planes/context/ContextOverview.tsx",
-    "src/components/planes/capability/CapabilityOverview.tsx",
-    "src/components/planes/execution/ExecutionOverview.tsx",
-    "src/app/workspace/[workspace]/[plane]/layout.tsx",
-    "src/app/workspace/[workspace]/[plane]/page.tsx",
-    "src/lib/navigation/planeConfig.ts"
+    "src/components/agent-chat/AgentChatPanel.tsx",
+    "src/components/agent-chat/ChatMessages.tsx",
+    "src/components/agent-chat/ChatMessage.tsx",
+    "src/components/agent-chat/ChatInput.tsx",
+    "src/components/agent-chat/ToolCallDisplay.tsx",
+    "src/components/agent-chat/index.ts",
+    "src/contexts/AgentChatContext.tsx",
+    "src/hooks/useAgentChat.ts",
+    "src/hooks/useAgentMessages.ts",
+    "src/lib/agent/types.ts"
   ],
   "checks": {
     "tsc": true,
@@ -30,5 +28,5 @@
       "require_evidence": true
     }
   },
-  "max_iterations": 75
+  "max_iterations": 100
 }

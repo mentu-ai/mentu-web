@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
@@ -8,18 +8,44 @@ import '@xterm/xterm/css/xterm.css';
 interface CloudTerminalProps {
   className?: string;
   autoStartAgent?: boolean;
+  sessionKey?: string; // Optional key to identify the session (e.g., workspace ID)
 }
 
 // The command to auto-start Claude agent
 const AGENT_COMMAND = 'claude --dangerously-skip-permissions';
 
-export function CloudTerminal({ className, autoStartAgent = true }: CloudTerminalProps) {
+// Connection settings
+const HEARTBEAT_INTERVAL = 30000; // Send heartbeat every 30 seconds
+const RECONNECT_DELAY = 2000; // Wait 2 seconds before reconnecting
+const MAX_RECONNECT_ATTEMPTS = 10;
+const SESSION_STORAGE_KEY = 'mentu_terminal_session';
+
+// Generate or retrieve session ID for persistent sessions
+function getOrCreateSessionId(sessionKey?: string): string {
+  const storageKey = sessionKey ? `${SESSION_STORAGE_KEY}_${sessionKey}` : SESSION_STORAGE_KEY;
+
+  if (typeof window === 'undefined') {
+    return crypto.randomUUID();
+  }
+
+  let sessionId = localStorage.getItem(storageKey);
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem(storageKey, sessionId);
+  }
+  return sessionId;
+}
+
+export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: CloudTerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstanceRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const [status, setStatus] = useState<'connecting' | 'connected' | 'agent_starting' | 'agent_ready' | 'disconnected'>('connecting');
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'agent_starting' | 'agent_ready' | 'reconnecting' | 'disconnected'>('connecting');
+
+  // Session ID for persistent sessions
+  const sessionIdRef = useRef<string>(getOrCreateSessionId(sessionKey));
 
   // State for output filtering
   const outputBufferRef = useRef<string>('');
@@ -27,45 +53,51 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
   const commandSentRef = useRef(false);
   const shellReadyRef = useRef(false);
 
-  useEffect(() => {
-    if (!terminalRef.current) return;
+  // Track if this is a session resume (don't auto-start agent again)
+  const isResumingSessionRef = useRef(false);
 
-    const term = new Terminal({
-      cursorBlink: true,
-      fontSize: 13,
-      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#18181b', // zinc-900
-        foreground: '#e4e4e7', // zinc-200
-        cursor: '#e4e4e7',
-        selectionBackground: '#3f3f46', // zinc-700
-      },
-      allowProposedApi: true,
-    });
+  // Connection management
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isIntentionalCloseRef = useRef(false);
+  const isConnectedRef = useRef(false);
 
-    const fitAddon = new FitAddon();
-    fitAddonRef.current = fitAddon;
-    term.loadAddon(fitAddon);
-    term.open(terminalRef.current);
+  // Cleanup function for intervals
+  const clearHeartbeat = useCallback(() => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+  }, []);
 
-    terminalInstanceRef.current = term;
+  const clearReconnectTimeout = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
 
-    // Fit after a short delay to ensure container has dimensions
-    const fitTerminal = () => {
-      if (fitAddon && terminalRef.current) {
-        try {
-          fitAddon.fit();
-        } catch {
-          // Ignore fit errors during initialization
-        }
+  // Start heartbeat to keep connection alive
+  const startHeartbeat = useCallback((socket: WebSocket) => {
+    clearHeartbeat();
+    heartbeatIntervalRef.current = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'ping' }));
       }
-    };
+    }, HEARTBEAT_INTERVAL);
+  }, [clearHeartbeat]);
 
-    // Initial fit with delay
-    setTimeout(fitTerminal, 100);
+  // Connect to WebSocket
+  const connect = useCallback(() => {
+    const term = terminalInstanceRef.current;
+    if (!term) return;
 
-    // Connect WebSocket
-    const wsUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'wss://api.mentu.ai/terminal';
+    clearReconnectTimeout();
+
+    // Build WebSocket URL with session ID for persistence
+    const baseUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'wss://api.mentu.ai/terminal';
+    const wsUrl = `${baseUrl}?session=${sessionIdRef.current}`;
     const socket = new WebSocket(wsUrl);
 
     // Function to send the agent command
@@ -89,40 +121,51 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
 
     // Function to check if output indicates shell is ready
     const checkShellReady = (data: string) => {
-      // Look for common shell prompt patterns
       const promptPatterns = [
         /\$\s*$/, // bash prompt ending with $
         />\s*$/, // prompt ending with >
         /mentu.*:\s*$/, // our custom prompt
         /~.*\$/, // home directory prompt
       ];
-
       return promptPatterns.some(pattern => pattern.test(data));
     };
 
     // Function to check if Claude agent has started
     const checkAgentStarted = (data: string) => {
-      // Look for Claude's output signature
       const agentPatterns = [
         /claude/i,
         /╭|╰|│/, // Claude's box-drawing characters
         /thinking/i,
         /I'll|I will|Let me/i, // Common Claude response starts
       ];
-
       return agentPatterns.some(pattern => pattern.test(data));
     };
 
     socket.onopen = () => {
+      isConnectedRef.current = true;
+      reconnectAttemptsRef.current = 0;
       setStatus('connected');
 
-      if (autoStartAgent) {
+      // Check if we're resuming an existing session
+      const isResuming = isResumingSessionRef.current || agentStartedRef.current;
+
+      if (isResuming) {
+        // Resuming session - don't show connection message or restart agent
+        setStatus(agentStartedRef.current ? 'agent_ready' : 'connected');
+      } else if (autoStartAgent && !agentStartedRef.current) {
         term.write('\x1b[90mConnecting to cloud terminal...\x1b[0m\r\n');
-      } else {
+      } else if (!autoStartAgent) {
         term.write('Connected to cloud terminal\r\n');
       }
 
-      fitTerminal();
+      // Fit terminal
+      if (fitAddonRef.current && terminalRef.current) {
+        try {
+          fitAddonRef.current.fit();
+        } catch {
+          // Ignore fit errors
+        }
+      }
 
       // Send initial resize
       socket.send(JSON.stringify({
@@ -130,11 +173,55 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
         cols: term.cols,
         rows: term.rows,
       }));
+
+      // Request session history if resuming
+      if (isResuming) {
+        socket.send(JSON.stringify({
+          type: 'resume',
+          sessionId: sessionIdRef.current,
+        }));
+      }
+
+      // Mark that we've connected at least once (future reconnects are resumes)
+      isResumingSessionRef.current = true;
+
+      // Start heartbeat
+      startHeartbeat(socket);
     };
 
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
+
+        // Handle pong responses (keep-alive acknowledgment)
+        if (msg.type === 'pong') {
+          return;
+        }
+
+        // Handle session history (sent when resuming)
+        if (msg.type === 'history') {
+          if (msg.data) {
+            term.write(msg.data);
+          }
+          // Mark agent as started if history indicates it was running
+          if (msg.agentRunning) {
+            agentStartedRef.current = true;
+            commandSentRef.current = true;
+            shellReadyRef.current = true;
+            setStatus('agent_ready');
+          }
+          return;
+        }
+
+        // Handle session info (tells us if this is a new or existing session)
+        if (msg.type === 'session') {
+          if (msg.isNew === false) {
+            // Existing session - mark as resuming
+            isResumingSessionRef.current = true;
+          }
+          return;
+        }
+
         if (msg.type === 'output') {
           const data = msg.data;
 
@@ -150,31 +237,25 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
             // Check if shell is ready and we haven't sent command yet
             if (!shellReadyRef.current && checkShellReady(outputBufferRef.current)) {
               shellReadyRef.current = true;
-              // Small delay to ensure shell is fully ready
               setTimeout(sendAgentCommand, 100);
-              return; // Don't write the prompt
+              return;
             }
 
             // If command sent but agent not started, filter output
             if (commandSentRef.current && !agentStartedRef.current) {
-              // Check if agent has started
               if (checkAgentStarted(data)) {
                 agentStartedRef.current = true;
                 setStatus('agent_ready');
-                // Clear and show clean output
                 term.clear();
                 term.write('\x1b[2J\x1b[H');
               }
 
-              // Filter out the command echo and early shell output
-              // Don't write anything until agent starts
               if (!agentStartedRef.current) {
                 return;
               }
             }
           }
 
-          // Normal output - write to terminal
           term.write(data);
         }
       } catch {
@@ -183,23 +264,119 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
     };
 
     socket.onclose = () => {
-      setStatus('disconnected');
-      term.write('\r\n\x1b[31mDisconnected from server\x1b[0m\r\n');
+      isConnectedRef.current = false;
+      clearHeartbeat();
+
+      // Don't reconnect if this was an intentional close
+      if (isIntentionalCloseRef.current) {
+        setStatus('disconnected');
+        return;
+      }
+
+      // Attempt to reconnect
+      if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+        setStatus('reconnecting');
+        term.write('\r\n\x1b[33m● Connection lost. Reconnecting...\x1b[0m\r\n');
+
+        reconnectAttemptsRef.current++;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connect();
+        }, RECONNECT_DELAY * Math.min(reconnectAttemptsRef.current, 5)); // Exponential backoff capped at 5x
+      } else {
+        setStatus('disconnected');
+        term.write('\r\n\x1b[31m● Disconnected. Max reconnection attempts reached.\x1b[0m\r\n');
+      }
     };
 
     socket.onerror = () => {
-      setStatus('disconnected');
-      term.write('\r\n\x1b[31mConnection error\x1b[0m\r\n');
+      // Error handling is done in onclose
     };
 
     wsRef.current = socket;
 
     // Terminal input → WebSocket
-    term.onData((data) => {
+    const dataHandler = term.onData((data) => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ type: 'input', data }));
       }
     });
+
+    return () => {
+      dataHandler.dispose();
+    };
+  }, [autoStartAgent, clearHeartbeat, clearReconnectTimeout, startHeartbeat]);
+
+  // Handle visibility change (tab switching, minimizing)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Page became visible - check connection and reconnect if needed
+        const socket = wsRef.current;
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+          if (!isIntentionalCloseRef.current && reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+            connect();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [connect]);
+
+  // Handle beforeunload - keep connection alive until page actually closes
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      isIntentionalCloseRef.current = true;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // Main effect for terminal initialization
+  useEffect(() => {
+    if (!terminalRef.current) return;
+
+    const term = new Terminal({
+      cursorBlink: true,
+      fontSize: 13,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      theme: {
+        background: '#18181b', // zinc-900
+        foreground: '#e4e4e7', // zinc-200
+        cursor: '#e4e4e7',
+        selectionBackground: '#3f3f46', // zinc-700
+      },
+      allowProposedApi: true,
+    });
+
+    const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
+    term.loadAddon(fitAddon);
+    term.open(terminalRef.current);
+
+    terminalInstanceRef.current = term;
+
+    // Fit after a short delay
+    const fitTerminal = () => {
+      if (fitAddon && terminalRef.current) {
+        try {
+          fitAddon.fit();
+        } catch {
+          // Ignore fit errors
+        }
+      }
+    };
+
+    setTimeout(fitTerminal, 100);
+
+    // Connect to WebSocket
+    connect();
 
     // Handle resize with debounce
     let resizeTimeout: NodeJS.Timeout;
@@ -207,7 +384,8 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         fitTerminal();
-        if (socket.readyState === WebSocket.OPEN) {
+        const socket = wsRef.current;
+        if (socket && socket.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({
             type: 'resize',
             cols: term.cols,
@@ -226,21 +404,30 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
     }
 
     return () => {
+      isIntentionalCloseRef.current = true;
       clearTimeout(resizeTimeout);
+      clearHeartbeat();
+      clearReconnectTimeout();
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
-      socket.close();
+
+      const socket = wsRef.current;
+      if (socket) {
+        socket.close();
+      }
+
       term.dispose();
     };
-  }, [autoStartAgent]);
+  }, [connect, clearHeartbeat, clearReconnectTimeout]);
 
-  // Status display text
+  // Status display
   const getStatusDisplay = () => {
     switch (status) {
       case 'connecting': return 'connecting';
       case 'connected': return 'connected';
       case 'agent_starting': return 'starting agent';
       case 'agent_ready': return 'agent ready';
+      case 'reconnecting': return 'reconnecting';
       case 'disconnected': return 'disconnected';
     }
   };
@@ -249,6 +436,7 @@ export function CloudTerminal({ className, autoStartAgent = true }: CloudTermina
     switch (status) {
       case 'connecting':
       case 'agent_starting':
+      case 'reconnecting':
         return 'bg-yellow-900/50 text-yellow-400';
       case 'connected':
       case 'agent_ready':
