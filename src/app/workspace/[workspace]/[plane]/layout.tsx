@@ -5,6 +5,7 @@ import { PlaneSidebar } from '@/components/layout/PlaneSidebar';
 import { createClient } from '@/lib/supabase/server';
 import { TerminalProvider } from '@/contexts/TerminalContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
+import { RightPanelProvider } from '@/contexts/RightPanelContext';
 import { TerminalPanel } from '@/components/ide/TerminalPanel';
 import { ResizableSidebar } from '@/components/ide/ResizableSidebar';
 import {
@@ -34,23 +35,25 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
   return (
     <TerminalProvider>
       <SidebarProvider>
-        <IDELayout>
-          <TopNav />
-          <IDEBody>
-            {/* Left Panel - Resizable Navigation */}
-            <ResizableSidebar>
-              <PlaneSidebar user={user ? { email: user.email } : undefined} />
-            </ResizableSidebar>
+        <RightPanelProvider>
+          <IDELayout>
+            <TopNav />
+            <IDEBody>
+              {/* Left Panel - Resizable Navigation */}
+              <ResizableSidebar>
+                <PlaneSidebar user={user ? { email: user.email } : undefined} />
+              </ResizableSidebar>
 
-            {/* Main Area - Editor + Terminal */}
-            <IDEMain>
-              <IDEEditor className="p-4 md:p-6 bg-zinc-50 dark:bg-zinc-950">
-                {children}
-              </IDEEditor>
-              <TerminalPanel />
-            </IDEMain>
-          </IDEBody>
-        </IDELayout>
+              {/* Main Area - Editor + Terminal */}
+              <IDEMain>
+                <IDEEditor className="p-4 md:p-6 bg-zinc-50 dark:bg-zinc-950">
+                  {children}
+                </IDEEditor>
+                <TerminalPanel />
+              </IDEMain>
+            </IDEBody>
+          </IDELayout>
+        </RightPanelProvider>
       </SidebarProvider>
     </TerminalProvider>
   );

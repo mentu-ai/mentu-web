@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCommitment } from '@/hooks/useCommitments';
 import { useBridgeCommands } from '@/hooks/useBridgeCommands';
+import { useRightPanel } from '@/contexts/RightPanelContext';
 import { getCommitmentTimeline } from '@/lib/mentu/state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,9 +45,16 @@ export function CommitmentPanel({
 }: CommitmentPanelProps) {
   const [activeTab, setActiveTab] = useState('timeline');
   const [copied, setCopied] = useState(false);
+  const { setOpen: setRightPanelOpen } = useRightPanel();
 
   const { commitment, operations, isLoading } = useCommitment(workspaceId, commitmentId || '');
   const { data: bridgeCommands } = useBridgeCommands(workspaceId);
+
+  // Notify layout when panel opens/closes
+  const isOpen = commitmentId !== null;
+  useEffect(() => {
+    setRightPanelOpen(isOpen);
+  }, [isOpen, setRightPanelOpen]);
 
   // Find active bridge command for this commitment
   const activeBridgeCommand = bridgeCommands?.find(
@@ -79,9 +87,6 @@ export function CommitmentPanel({
       setActiveTab('timeline');
     }
   }, [commitmentId]);
-
-  // Panel visibility
-  const isOpen = commitmentId !== null;
 
   return (
     <div

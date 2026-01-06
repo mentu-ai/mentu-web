@@ -4,6 +4,7 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 import { X, ChevronUp, ChevronDown, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
+import { useRightPanel } from '@/contexts/RightPanelContext';
 import { CloudTerminal } from '../terminal/CloudTerminal';
 
 const MIN_HEIGHT = 150;
@@ -12,6 +13,7 @@ const HEADER_HEIGHT = 33; // Height of resize handle + header
 
 export function TerminalPanel() {
   const { isOpen, height, toggle, close, setHeight } = useTerminal();
+  const { isOpen: rightPanelOpen, width: rightPanelWidth } = useRightPanel();
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
@@ -59,7 +61,10 @@ export function TerminalPanel() {
   // Collapsed status bar when terminal is closed
   if (!isOpen) {
     return (
-      <div className="flex-shrink-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700">
+      <div
+        className="flex-shrink-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700 transition-all duration-200"
+        style={{ marginRight: rightPanelOpen ? rightPanelWidth : 0 }}
+      >
         <button
           onClick={toggle}
           className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -78,8 +83,8 @@ export function TerminalPanel() {
   return (
     <div
       ref={containerRef}
-      className="flex-shrink-0 flex flex-col bg-zinc-900 border-t border-zinc-700"
-      style={{ height }}
+      className="flex-shrink-0 flex flex-col bg-zinc-900 border-t border-zinc-700 transition-all duration-200"
+      style={{ height, marginRight: rightPanelOpen ? rightPanelWidth : 0 }}
     >
       {/* Resize handle */}
       <div
