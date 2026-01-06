@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { X, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
 import { CloudTerminal } from '../terminal/CloudTerminal';
@@ -11,7 +11,7 @@ const MAX_HEIGHT = 600;
 const HEADER_HEIGHT = 33; // Height of resize handle + header
 
 export function TerminalPanel() {
-  const { isOpen, height, close, setHeight } = useTerminal();
+  const { isOpen, height, toggle, close, setHeight } = useTerminal();
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
@@ -56,7 +56,24 @@ export function TerminalPanel() {
     };
   }, [setHeight]);
 
-  if (!isOpen) return null;
+  // Collapsed status bar when terminal is closed
+  if (!isOpen) {
+    return (
+      <div className="flex-shrink-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700">
+        <button
+          onClick={toggle}
+          className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          title="Open Terminal"
+        >
+          <Terminal className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Terminal</span>
+        </button>
+        <div className="flex items-center gap-3 text-[10px] text-zinc-500">
+          <span>Cloud Session</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
