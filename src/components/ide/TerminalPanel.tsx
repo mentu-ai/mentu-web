@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { X, ChevronUp, ChevronDown, Terminal } from 'lucide-react';
+import { X, Plus, Settings, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
 import { useRightPanel } from '@/contexts/RightPanelContext';
@@ -9,7 +9,7 @@ import { CloudTerminal } from '../terminal/CloudTerminal';
 
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = 600;
-const HEADER_HEIGHT = 33; // Height of resize handle + header
+const TAB_BAR_HEIGHT = 36;
 
 export function TerminalPanel() {
   const { isOpen, height, toggle, close, setHeight } = useTerminal();
@@ -18,11 +18,12 @@ export function TerminalPanel() {
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
-  const [contentHeight, setContentHeight] = useState(height - HEADER_HEIGHT);
+  const [contentHeight, setContentHeight] = useState(height - TAB_BAR_HEIGHT);
+  const [activeTab] = useState(1);
 
   // Update content height when panel height changes
   useEffect(() => {
-    setContentHeight(Math.max(0, height - HEADER_HEIGHT));
+    setContentHeight(Math.max(0, height - TAB_BAR_HEIGHT));
   }, [height]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -65,7 +66,8 @@ export function TerminalPanel() {
       {/* Collapsed status bar - shown when terminal is closed */}
       <div
         className={cn(
-          'flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-4 bg-zinc-800 border-t border-zinc-700 overflow-hidden',
+          'flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-4 overflow-hidden',
+          'bg-[#1e2128] border-t border-[#2d313a]',
           isOpen && 'hidden'
         )}
         style={{
@@ -91,10 +93,11 @@ export function TerminalPanel() {
       <div
         ref={containerRef}
         className={cn(
-          'flex-shrink-0 w-full min-w-0 max-w-full flex flex-col bg-zinc-900 border-t border-zinc-700 overflow-hidden'
+          'flex-shrink-0 w-full min-w-0 max-w-full flex flex-col overflow-hidden',
+          'bg-[#1a1d23] border-t border-[#2d313a]'
         )}
         style={{
-          height: isOpen ? height : 1, // Keep minimal height when closed to stay mounted
+          height: isOpen ? height : 1,
           marginLeft: 0,
           marginRight: isOpen ? marginRight : 0,
           contain: 'layout style',
@@ -109,40 +112,53 @@ export function TerminalPanel() {
         <div
           onMouseDown={handleMouseDown}
           className={cn(
-            'h-1 cursor-ns-resize flex-shrink-0',
+            'h-[3px] cursor-ns-resize flex-shrink-0',
             'hover:bg-blue-500/50 transition-colors',
-            'bg-zinc-700'
+            'bg-transparent'
           )}
         />
 
-        {/* Terminal header */}
-        <div className="h-8 flex items-center justify-between px-4 bg-zinc-800 border-b border-zinc-700 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-zinc-300 uppercase tracking-wide">Terminal</span>
-            <span className="text-xs text-zinc-500">Cloud Session</span>
+        {/* Tab bar */}
+        <div className="h-9 flex items-stretch bg-[#1e2128] flex-shrink-0">
+          {/* Tabs area */}
+          <div className="flex-1 flex items-stretch overflow-x-auto">
+            {/* Tab 1 - Active */}
+            <div
+              className={cn(
+                'flex items-center gap-2 px-3 min-w-0 border-r border-[#2d313a] cursor-pointer',
+                activeTab === 1
+                  ? 'bg-[#1a1d23] text-zinc-200'
+                  : 'bg-[#1e2128] text-zinc-500 hover:text-zinc-300'
+              )}
+            >
+              <span className="text-xs font-medium text-zinc-500">{activeTab}</span>
+              <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-sm truncate">Terminal</span>
+              <button
+                onClick={close}
+                className="ml-1 p-0.5 rounded hover:bg-zinc-700/50 text-zinc-500 hover:text-zinc-300 transition-colors"
+                title="Close Terminal"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Add new terminal button */}
+            <button
+              className="flex items-center justify-center px-3 text-zinc-500 hover:text-zinc-300 hover:bg-[#252830] transition-colors"
+              title="New Terminal"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-0.5">
+          {/* Right side actions */}
+          <div className="flex items-center gap-1 px-2 border-l border-[#2d313a]">
             <button
-              onClick={() => setHeight(MIN_HEIGHT)}
-              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-              title="Minimize"
+              className="p-1.5 rounded hover:bg-[#252830] text-zinc-500 hover:text-zinc-300 transition-colors"
+              title="Terminal Settings"
             >
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setHeight(MAX_HEIGHT)}
-              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-              title="Maximize"
-            >
-              <ChevronUp className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={close}
-              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-              title="Close"
-            >
-              <X className="w-3.5 h-3.5" />
+              <Settings className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -150,7 +166,7 @@ export function TerminalPanel() {
         {/* Terminal content - SINGLE instance, always mounted */}
         <div
           style={{ height: isOpen ? contentHeight : 400 }}
-          className="overflow-hidden"
+          className="overflow-hidden bg-[#1a1d23]"
         >
           <CloudTerminal className="w-full h-full" />
         </div>

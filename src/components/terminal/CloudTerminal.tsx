@@ -347,10 +347,27 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: {
-        background: '#18181b', // zinc-900
-        foreground: '#e4e4e7', // zinc-200
-        cursor: '#e4e4e7',
-        selectionBackground: '#3f3f46', // zinc-700
+        background: '#1a1d23',
+        foreground: '#d4d4d8',
+        cursor: '#d4d4d8',
+        cursorAccent: '#1a1d23',
+        selectionBackground: '#3b4252',
+        black: '#2e3440',
+        red: '#bf616a',
+        green: '#a3be8c',
+        yellow: '#ebcb8b',
+        blue: '#81a1c1',
+        magenta: '#b48ead',
+        cyan: '#88c0d0',
+        white: '#e5e9f0',
+        brightBlack: '#4c566a',
+        brightRed: '#bf616a',
+        brightGreen: '#a3be8c',
+        brightYellow: '#ebcb8b',
+        brightBlue: '#81a1c1',
+        brightMagenta: '#b48ead',
+        brightCyan: '#8fbcbb',
+        brightWhite: '#eceff4',
       },
       allowProposedApi: true,
     });
@@ -447,11 +464,11 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
   };
 
   return (
-    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900 overflow-hidden`}>
+    <div ref={containerRef} className={`${className} flex flex-col bg-[#1a1d23] overflow-hidden`}>
       {/* Terminal area */}
       <div ref={terminalRef} className="flex-1 min-h-0 min-w-0 overflow-hidden" />
       {/* Status bar */}
-      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-800/50 border-t border-zinc-800">
+      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-[#1e2128] border-t border-[#2d313a]">
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor()}`}>
           {getStatusDisplay()}
         </span>
