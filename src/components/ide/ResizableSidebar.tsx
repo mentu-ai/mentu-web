@@ -56,7 +56,7 @@ export function ResizableSidebar({ children, className }: ResizableSidebarProps)
     return (
       <div
         className={cn(
-          'flex-shrink-0 flex flex-col',
+          'flex-shrink-0 flex flex-col isolate',
           'bg-white dark:bg-zinc-900',
           sidebar.position === 'left'
             ? 'border-r border-zinc-200 dark:border-zinc-800'
@@ -79,7 +79,7 @@ export function ResizableSidebar({ children, className }: ResizableSidebarProps)
   return (
     <div
       className={cn(
-        'flex-shrink-0 flex',
+        'flex-shrink-0 flex isolate',
         sidebar.position === 'left' ? 'flex-row' : 'flex-row-reverse',
         className
       )}

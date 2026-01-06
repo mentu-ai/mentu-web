@@ -31,7 +31,7 @@ interface IDEBodyProps {
  */
 export function IDEBody({ children, className }: IDEBodyProps) {
   return (
-    <div className={cn('flex-1 flex overflow-hidden', className)}>
+    <div className={cn('flex-1 flex overflow-hidden relative', className)}>
       {children}
     </div>
   );
@@ -85,7 +85,7 @@ interface IDEMainProps {
  */
 export function IDEMain({ children, className }: IDEMainProps) {
   return (
-    <div className={cn('flex-1 flex flex-col min-w-0 overflow-hidden', className)}>
+    <div className={cn('flex-1 flex flex-col min-w-0 overflow-hidden relative isolate', className)}>
       {children}
     </div>
   );
