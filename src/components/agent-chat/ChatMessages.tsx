@@ -4,8 +4,10 @@ import { useRef, useEffect } from 'react';
 import { useAgentChatContext } from '@/contexts/AgentChatContext';
 import { ChatMessage } from './ChatMessage';
 
+const AGENT_WS_URL = process.env.NEXT_PUBLIC_AGENT_WS_URL || '';
+
 export function ChatMessages() {
-  const { messages, isStreaming } = useAgentChatContext();
+  const { messages, isStreaming, status } = useAgentChatContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScroll = useRef(true);
 
@@ -23,12 +25,40 @@ export function ChatMessages() {
     shouldAutoScroll.current = scrollHeight - scrollTop - clientHeight < 100;
   };
 
+  // Show not configured message
+  if (!AGENT_WS_URL) {
+    return (
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="text-center text-zinc-400 dark:text-zinc-500">
+          <p className="text-sm font-medium">Agent not configured</p>
+          <p className="text-xs mt-1 max-w-[280px]">
+            Set NEXT_PUBLIC_AGENT_WS_URL environment variable to enable the agent chat.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (messages.length === 0) {
     return (
       <div className="h-full flex items-center justify-center p-4">
         <div className="text-center text-zinc-400 dark:text-zinc-500">
-          <p className="text-sm">No messages yet</p>
-          <p className="text-xs mt-1">Start a conversation with the agent</p>
+          {status === 'connecting' ? (
+            <>
+              <p className="text-sm">Connecting...</p>
+              <p className="text-xs mt-1">Establishing connection to agent</p>
+            </>
+          ) : status === 'error' ? (
+            <>
+              <p className="text-sm font-medium">Connection failed</p>
+              <p className="text-xs mt-1">Unable to connect to agent service</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm">No messages yet</p>
+              <p className="text-xs mt-1">Start a conversation with the agent</p>
+            </>
+          )}
         </div>
       </div>
     );

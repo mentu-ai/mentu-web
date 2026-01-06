@@ -12,9 +12,10 @@ import type {
   Conversation
 } from '@/lib/agent/types';
 
-const AGENT_WS_URL = process.env.NEXT_PUBLIC_AGENT_WS_URL || 'ws://localhost:8080/agent';
-const RECONNECT_DELAY = 2000;
-const MAX_RECONNECT_DELAY = 30000;
+const AGENT_WS_URL = process.env.NEXT_PUBLIC_AGENT_WS_URL || '';
+const RECONNECT_DELAY = 5000;
+const MAX_RECONNECT_DELAY = 60000;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 export function useAgentChat() {
   const {
@@ -123,8 +124,22 @@ export function useAgentChat() {
   }, [addMessage, updateMessage, setIsStreaming]);
 
   const connect = useCallback(() => {
+    // Don't connect if no URL configured
+    if (!AGENT_WS_URL) {
+      console.log('Agent WebSocket URL not configured');
+      setStatus('disconnected');
+      return;
+    }
+
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
     if (wsRef.current?.readyState === WebSocket.CONNECTING) return;
+
+    // Stop after max attempts
+    if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+      console.log('Max reconnect attempts reached');
+      setStatus('error');
+      return;
+    }
 
     setStatus('connecting');
 
@@ -163,8 +178,8 @@ export function useAgentChat() {
         setStatus('disconnected');
         wsRef.current = null;
 
-        // Only reconnect if panel is still open
-        if (isOpen) {
+        // Only reconnect if panel is still open and under max attempts
+        if (isOpen && reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
             RECONNECT_DELAY * Math.pow(2, reconnectAttempts.current),
             MAX_RECONNECT_DELAY
@@ -174,8 +189,8 @@ export function useAgentChat() {
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+      ws.onerror = () => {
+        // Don't log error, just let onclose handle reconnect
         setStatus('error');
       };
     } catch (error) {
