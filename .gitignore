@@ -37,3 +37,4 @@ next-env.d.ts
 .env
 *.sync-conflict*
 agent-service/node_modules/
+agent-service/dist/
