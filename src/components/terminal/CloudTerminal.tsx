@@ -347,27 +347,27 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: {
-        background: '#1a1d23',
-        foreground: '#d4d4d8',
-        cursor: '#d4d4d8',
-        cursorAccent: '#1a1d23',
-        selectionBackground: '#3b4252',
-        black: '#2e3440',
-        red: '#bf616a',
-        green: '#a3be8c',
-        yellow: '#ebcb8b',
-        blue: '#81a1c1',
-        magenta: '#b48ead',
-        cyan: '#88c0d0',
-        white: '#e5e9f0',
-        brightBlack: '#4c566a',
-        brightRed: '#bf616a',
-        brightGreen: '#a3be8c',
-        brightYellow: '#ebcb8b',
-        brightBlue: '#81a1c1',
-        brightMagenta: '#b48ead',
-        brightCyan: '#8fbcbb',
-        brightWhite: '#eceff4',
+        background: '#18181b', // zinc-900
+        foreground: '#e4e4e7', // zinc-200
+        cursor: '#e4e4e7',
+        cursorAccent: '#18181b',
+        selectionBackground: '#3f3f46', // zinc-700
+        black: '#27272a', // zinc-800
+        red: '#f87171', // red-400
+        green: '#4ade80', // green-400
+        yellow: '#facc15', // yellow-400
+        blue: '#60a5fa', // blue-400
+        magenta: '#c084fc', // purple-400
+        cyan: '#22d3ee', // cyan-400
+        white: '#e4e4e7', // zinc-200
+        brightBlack: '#52525b', // zinc-600
+        brightRed: '#fca5a5', // red-300
+        brightGreen: '#86efac', // green-300
+        brightYellow: '#fde047', // yellow-300
+        brightBlue: '#93c5fd', // blue-300
+        brightMagenta: '#d8b4fe', // purple-300
+        brightCyan: '#67e8f9', // cyan-300
+        brightWhite: '#fafafa', // zinc-50
       },
       allowProposedApi: true,
     });
@@ -464,11 +464,11 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
   };
 
   return (
-    <div ref={containerRef} className={`${className} flex flex-col bg-[#1a1d23] overflow-hidden`}>
+    <div ref={containerRef} className={`${className} flex flex-col bg-zinc-900 overflow-hidden`}>
       {/* Terminal area */}
       <div ref={terminalRef} className="flex-1 min-h-0 min-w-0 overflow-hidden" />
       {/* Status bar */}
-      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-[#1e2128] border-t border-[#2d313a]">
+      <div className="h-5 flex-shrink-0 flex items-center justify-end px-2 bg-zinc-800 border-t border-zinc-700">
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor()}`}>
           {getStatusDisplay()}
         </span>

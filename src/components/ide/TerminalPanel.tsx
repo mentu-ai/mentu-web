@@ -11,6 +11,11 @@ const MIN_HEIGHT = 150;
 const MAX_HEIGHT = 600;
 const TAB_BAR_HEIGHT = 36;
 
+interface TerminalTab {
+  id: string;
+  name: string;
+}
+
 export function TerminalPanel() {
   const { isOpen, height, toggle, close, setHeight } = useTerminal();
   const { isOpen: rightPanelOpen, width: rightPanelWidth } = useRightPanel();
@@ -19,7 +24,13 @@ export function TerminalPanel() {
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
   const [contentHeight, setContentHeight] = useState(height - TAB_BAR_HEIGHT);
-  const [activeTab] = useState(1);
+
+  // Multi-terminal state
+  const [tabs, setTabs] = useState<TerminalTab[]>([
+    { id: 'terminal-1', name: 'Terminal' }
+  ]);
+  const [activeTabId, setActiveTabId] = useState('terminal-1');
+  const tabCounterRef = useRef(1);
 
   // Update content height when panel height changes
   useEffect(() => {
@@ -59,6 +70,41 @@ export function TerminalPanel() {
     };
   }, [setHeight]);
 
+  const addNewTerminal = useCallback(() => {
+    tabCounterRef.current += 1;
+    const newTab: TerminalTab = {
+      id: `terminal-${tabCounterRef.current}`,
+      name: 'Terminal'
+    };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+  }, []);
+
+  const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    setTabs(prev => {
+      const newTabs = prev.filter(t => t.id !== tabId);
+
+      // If we're closing the active tab, switch to another one
+      if (tabId === activeTabId && newTabs.length > 0) {
+        const closedIndex = prev.findIndex(t => t.id === tabId);
+        const newActiveIndex = Math.min(closedIndex, newTabs.length - 1);
+        setActiveTabId(newTabs[newActiveIndex].id);
+      }
+
+      // If no tabs left, close the panel
+      if (newTabs.length === 0) {
+        close();
+        // Reset to default tab for next open
+        tabCounterRef.current = 1;
+        return [{ id: 'terminal-1', name: 'Terminal' }];
+      }
+
+      return newTabs;
+    });
+  }, [activeTabId, close]);
+
   const marginRight = rightPanelOpen ? rightPanelWidth : 0;
 
   return (
@@ -67,7 +113,7 @@ export function TerminalPanel() {
       <div
         className={cn(
           'flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-4 overflow-hidden',
-          'bg-[#1e2128] border-t border-[#2d313a]',
+          'bg-zinc-800 border-t border-zinc-700',
           isOpen && 'hidden'
         )}
         style={{
@@ -94,7 +140,7 @@ export function TerminalPanel() {
         ref={containerRef}
         className={cn(
           'flex-shrink-0 w-full min-w-0 max-w-full flex flex-col overflow-hidden',
-          'bg-[#1a1d23] border-t border-[#2d313a]'
+          'bg-zinc-900 border-t border-zinc-700'
         )}
         style={{
           height: isOpen ? height : 1,
@@ -119,33 +165,37 @@ export function TerminalPanel() {
         />
 
         {/* Tab bar */}
-        <div className="h-9 flex items-stretch bg-[#1e2128] flex-shrink-0">
+        <div className="h-9 flex items-stretch bg-zinc-800 flex-shrink-0">
           {/* Tabs area */}
-          <div className="flex-1 flex items-stretch overflow-x-auto">
-            {/* Tab 1 - Active */}
-            <div
-              className={cn(
-                'flex items-center gap-2 px-3 min-w-0 border-r border-[#2d313a] cursor-pointer',
-                activeTab === 1
-                  ? 'bg-[#1a1d23] text-zinc-200'
-                  : 'bg-[#1e2128] text-zinc-500 hover:text-zinc-300'
-              )}
-            >
-              <span className="text-xs font-medium text-zinc-500">{activeTab}</span>
-              <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="text-sm truncate">Terminal</span>
-              <button
-                onClick={close}
-                className="ml-1 p-0.5 rounded hover:bg-zinc-700/50 text-zinc-500 hover:text-zinc-300 transition-colors"
-                title="Close Terminal"
+          <div className="flex-1 flex items-stretch overflow-x-auto scrollbar-none">
+            {tabs.map((tab, index) => (
+              <div
+                key={tab.id}
+                onClick={() => setActiveTabId(tab.id)}
+                className={cn(
+                  'flex items-center gap-2 px-3 min-w-0 border-r border-zinc-700 cursor-pointer select-none',
+                  activeTabId === tab.id
+                    ? 'bg-zinc-900 text-zinc-200'
+                    : 'bg-zinc-800 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-750'
+                )}
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                <span className="text-xs font-medium text-zinc-500">{index + 1}</span>
+                <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="text-sm truncate">{tab.name}</span>
+                <button
+                  onClick={(e) => closeTab(tab.id, e)}
+                  className="ml-1 p-0.5 rounded hover:bg-zinc-600 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  title="Close Terminal"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
 
             {/* Add new terminal button */}
             <button
-              className="flex items-center justify-center px-3 text-zinc-500 hover:text-zinc-300 hover:bg-[#252830] transition-colors"
+              onClick={addNewTerminal}
+              className="flex items-center justify-center px-3 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700 transition-colors"
               title="New Terminal"
             >
               <Plus className="w-4 h-4" />
@@ -153,9 +203,9 @@ export function TerminalPanel() {
           </div>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-1 px-2 border-l border-[#2d313a]">
+          <div className="flex items-center gap-1 px-2 border-l border-zinc-700">
             <button
-              className="p-1.5 rounded hover:bg-[#252830] text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors"
               title="Terminal Settings"
             >
               <Settings className="w-4 h-4" />
@@ -163,12 +213,26 @@ export function TerminalPanel() {
           </div>
         </div>
 
-        {/* Terminal content - SINGLE instance, always mounted */}
+        {/* Terminal content - render all terminals, show only active */}
         <div
           style={{ height: isOpen ? contentHeight : 400 }}
-          className="overflow-hidden bg-[#1a1d23]"
+          className="overflow-hidden bg-zinc-900 relative"
         >
-          <CloudTerminal className="w-full h-full" />
+          {tabs.map(tab => (
+            <div
+              key={tab.id}
+              className="absolute inset-0"
+              style={{
+                visibility: activeTabId === tab.id ? 'visible' : 'hidden',
+                zIndex: activeTabId === tab.id ? 1 : 0,
+              }}
+            >
+              <CloudTerminal
+                className="w-full h-full"
+                sessionKey={tab.id}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </>
