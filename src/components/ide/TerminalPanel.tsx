@@ -5,20 +5,27 @@ import { X, ChevronUp, ChevronDown, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
 import { useRightPanel } from '@/contexts/RightPanelContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { CloudTerminal } from '../terminal/CloudTerminal';
 
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = 600;
 const HEADER_HEIGHT = 33; // Height of resize handle + header
 
+const COLLAPSED_SIDEBAR_WIDTH = 40;
+
 export function TerminalPanel() {
   const { isOpen, height, toggle, close, setHeight } = useTerminal();
   const { isOpen: rightPanelOpen, width: rightPanelWidth } = useRightPanel();
+  const { sidebar } = useSidebar();
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
   const [contentHeight, setContentHeight] = useState(height - HEADER_HEIGHT);
+
+  // Calculate left offset based on sidebar state
+  const leftOffset = sidebar.isOpen ? sidebar.width : COLLAPSED_SIDEBAR_WIDTH;
 
   // Update content height when panel height changes
   useEffect(() => {
@@ -62,8 +69,11 @@ export function TerminalPanel() {
   if (!isOpen) {
     return (
       <div
-        className="flex-shrink-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700 transition-all duration-200"
-        style={{ marginRight: rightPanelOpen ? rightPanelWidth : 0 }}
+        className="fixed bottom-0 h-7 flex items-center justify-between px-3 bg-zinc-800 border-t border-zinc-700 transition-all duration-200 z-10"
+        style={{
+          left: leftOffset,
+          right: rightPanelOpen ? rightPanelWidth : 0,
+        }}
       >
         <button
           onClick={toggle}
@@ -83,8 +93,12 @@ export function TerminalPanel() {
   return (
     <div
       ref={containerRef}
-      className="flex-shrink-0 flex flex-col bg-zinc-900 border-t border-zinc-700 transition-all duration-200"
-      style={{ height, marginRight: rightPanelOpen ? rightPanelWidth : 0 }}
+      className="fixed bottom-0 flex flex-col bg-zinc-900 border-t border-zinc-700 transition-all duration-200 z-10"
+      style={{
+        height,
+        left: leftOffset,
+        right: rightPanelOpen ? rightPanelWidth : 0,
+      }}
     >
       {/* Resize handle */}
       <div
