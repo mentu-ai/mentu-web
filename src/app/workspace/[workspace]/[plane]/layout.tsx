@@ -36,7 +36,7 @@ export default async function PlaneLayout({ children, params }: PlaneLayoutProps
         <TopNav />
         <IDEBody>
           {/* Left Panel - Navigation */}
-          <IDEPanel position="left" width={192}>
+          <IDEPanel position="left" width={240}>
             <PlaneSidebar user={user ? { email: user.email } : undefined} />
           </IDEPanel>
 
