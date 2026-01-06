@@ -2,11 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 import { TopNav } from '@/components/nav/TopNav';
 import { SettingsSidebar } from '@/components/layout/SettingsSidebar';
 import { TerminalProvider } from '@/contexts/TerminalContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import { TerminalPanel } from '@/components/ide/TerminalPanel';
+import { ResizableSidebar } from '@/components/ide/ResizableSidebar';
 import {
   IDELayout,
   IDEBody,
-  IDEPanel,
   IDEMain,
   IDEEditor,
 } from '@/components/ide/IDELayout';
@@ -23,28 +24,30 @@ export default async function SettingsLayout({ children, params }: SettingsLayou
 
   return (
     <TerminalProvider>
-      <IDELayout>
-        <TopNav />
-        <IDEBody>
-          {/* Left Panel - Settings Navigation */}
-          <IDEPanel position="left" width={224}>
-            <SettingsSidebar
-              workspaceName={workspace}
-              user={user ? { email: user.email } : undefined}
-            />
-          </IDEPanel>
+      <SidebarProvider>
+        <IDELayout>
+          <TopNav />
+          <IDEBody>
+            {/* Left Panel - Settings Navigation */}
+            <ResizableSidebar>
+              <SettingsSidebar
+                workspaceName={workspace}
+                user={user ? { email: user.email } : undefined}
+              />
+            </ResizableSidebar>
 
-          {/* Main Area - Settings Content + Terminal */}
-          <IDEMain>
-            <IDEEditor className="p-8 bg-zinc-50 dark:bg-zinc-950">
-              <div className="max-w-3xl">
-                {children}
-              </div>
-            </IDEEditor>
-            <TerminalPanel />
-          </IDEMain>
-        </IDEBody>
-      </IDELayout>
+            {/* Main Area - Settings Content + Terminal */}
+            <IDEMain>
+              <IDEEditor className="p-8 bg-zinc-50 dark:bg-zinc-950">
+                <div className="max-w-3xl">
+                  {children}
+                </div>
+              </IDEEditor>
+              <TerminalPanel />
+            </IDEMain>
+          </IDEBody>
+        </IDELayout>
+      </SidebarProvider>
     </TerminalProvider>
   );
 }

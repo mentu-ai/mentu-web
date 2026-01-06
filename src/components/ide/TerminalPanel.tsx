@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { X, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '@/contexts/TerminalContext';
@@ -8,12 +8,20 @@ import { CloudTerminal } from '../terminal/CloudTerminal';
 
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = 600;
+const HEADER_HEIGHT = 33; // Height of resize handle + header
 
 export function TerminalPanel() {
   const { isOpen, height, close, setHeight } = useTerminal();
+  const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
+  const [contentHeight, setContentHeight] = useState(height - HEADER_HEIGHT);
+
+  // Update content height when panel height changes
+  useEffect(() => {
+    setContentHeight(Math.max(0, height - HEADER_HEIGHT));
+  }, [height]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,6 +60,7 @@ export function TerminalPanel() {
 
   return (
     <div
+      ref={containerRef}
       className="flex-shrink-0 flex flex-col bg-zinc-900 border-t border-zinc-700"
       style={{ height }}
     >
@@ -66,7 +75,7 @@ export function TerminalPanel() {
       />
 
       {/* Terminal header */}
-      <div className="flex items-center justify-between px-3 py-1 bg-zinc-800 border-b border-zinc-700 flex-shrink-0">
+      <div className="h-8 flex items-center justify-between px-3 bg-zinc-800 border-b border-zinc-700 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-zinc-300 uppercase tracking-wide">Terminal</span>
           <span className="text-xs text-zinc-500">Cloud Session</span>
@@ -97,11 +106,9 @@ export function TerminalPanel() {
         </div>
       </div>
 
-      {/* Terminal content - explicit height calculation */}
-      <div className="flex-1 relative">
-        <div className="absolute inset-0">
-          <CloudTerminal className="w-full h-full" />
-        </div>
+      {/* Terminal content with explicit pixel height */}
+      <div style={{ height: contentHeight }} className="overflow-hidden">
+        <CloudTerminal className="w-full h-full" />
       </div>
     </div>
   );

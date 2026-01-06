@@ -8,3 +8,4 @@ export {
 } from './IDELayout';
 
 export { TerminalPanel } from './TerminalPanel';
+export { ResizableSidebar } from './ResizableSidebar';
