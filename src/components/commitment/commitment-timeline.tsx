@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { OperationRow, CommitPayload, ReleasePayload, ClosePayload, AnnotatePayload } from '@/lib/mentu/types';
-import { Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare } from 'lucide-react';
+import { Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, User, Bot } from 'lucide-react';
 
 interface CommitmentTimelineProps {
   operations: OperationRow[];
@@ -66,12 +66,14 @@ export function CommitmentTimeline({ operations, workspaceName }: CommitmentTime
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium">{config.label}</span>
                 <span className="text-zinc-500">by</span>
-                <Link
-                  href={`/workspace/${workspaceName}/actors/${op.actor}`}
-                  className="font-medium hover:underline"
-                >
+                <span className="inline-flex items-center gap-1 font-medium text-zinc-700 dark:text-zinc-300">
+                  {op.actor.startsWith('agent:') ? (
+                    <Bot className="h-3 w-3 text-purple-500" />
+                  ) : (
+                    <User className="h-3 w-3 text-blue-500" />
+                  )}
                   {op.actor}
-                </Link>
+                </span>
                 <Tooltip>
                   <TooltipTrigger>
                     <span className="text-sm text-zinc-400">
