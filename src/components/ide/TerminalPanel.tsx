@@ -58,14 +58,19 @@ export function TerminalPanel() {
     };
   }, [setHeight]);
 
-  // Collapsed status bar when terminal is closed
-  if (!isOpen) {
-    return (
+  const marginRight = rightPanelOpen ? rightPanelWidth : 0;
+
+  return (
+    <>
+      {/* Collapsed status bar - shown when terminal is closed */}
       <div
-        className="flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-4 bg-zinc-800 border-t border-zinc-700 overflow-hidden"
+        className={cn(
+          'flex-shrink-0 w-full min-w-0 max-w-full h-7 flex items-center justify-between px-4 bg-zinc-800 border-t border-zinc-700 overflow-hidden',
+          isOpen && 'hidden'
+        )}
         style={{
           marginLeft: 0,
-          marginRight: rightPanelOpen ? rightPanelWidth : 0,
+          marginRight,
           contain: 'layout style',
         }}
       >
@@ -81,66 +86,75 @@ export function TerminalPanel() {
           <span>Cloud Session</span>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div
-      ref={containerRef}
-      className="flex-shrink-0 w-full min-w-0 max-w-full flex flex-col bg-zinc-900 border-t border-zinc-700 overflow-hidden"
-      style={{
-        height,
-        marginLeft: 0,
-        marginRight: rightPanelOpen ? rightPanelWidth : 0,
-        contain: 'layout style',
-      }}
-    >
-      {/* Resize handle */}
+      {/* Full terminal panel - always rendered, visibility controlled */}
       <div
-        onMouseDown={handleMouseDown}
+        ref={containerRef}
         className={cn(
-          'h-1 cursor-ns-resize flex-shrink-0',
-          'hover:bg-blue-500/50 transition-colors',
-          'bg-zinc-700'
+          'flex-shrink-0 w-full min-w-0 max-w-full flex flex-col bg-zinc-900 border-t border-zinc-700 overflow-hidden'
         )}
-      />
+        style={{
+          height: isOpen ? height : 1, // Keep minimal height when closed to stay mounted
+          marginLeft: 0,
+          marginRight: isOpen ? marginRight : 0,
+          contain: 'layout style',
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          position: isOpen ? 'relative' : 'absolute',
+          left: isOpen ? 'auto' : '-9999px',
+        }}
+        aria-hidden={!isOpen}
+      >
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className={cn(
+            'h-1 cursor-ns-resize flex-shrink-0',
+            'hover:bg-blue-500/50 transition-colors',
+            'bg-zinc-700'
+          )}
+        />
 
-      {/* Terminal header */}
-      <div className="h-8 flex items-center justify-between px-4 bg-zinc-800 border-b border-zinc-700 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-zinc-300 uppercase tracking-wide">Terminal</span>
-          <span className="text-xs text-zinc-500">Cloud Session</span>
+        {/* Terminal header */}
+        <div className="h-8 flex items-center justify-between px-4 bg-zinc-800 border-b border-zinc-700 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-zinc-300 uppercase tracking-wide">Terminal</span>
+            <span className="text-xs text-zinc-500">Cloud Session</span>
+          </div>
+
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => setHeight(MIN_HEIGHT)}
+              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+              title="Minimize"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setHeight(MAX_HEIGHT)}
+              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+              title="Maximize"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={close}
+              className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
+              title="Close"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={() => setHeight(MIN_HEIGHT)}
-            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-            title="Minimize"
-          >
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setHeight(MAX_HEIGHT)}
-            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-            title="Maximize"
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={close}
-            className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors"
-            title="Close"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+        {/* Terminal content - SINGLE instance, always mounted */}
+        <div
+          style={{ height: isOpen ? contentHeight : 400 }}
+          className="overflow-hidden"
+        >
+          <CloudTerminal className="w-full h-full" />
         </div>
       </div>
-
-      {/* Terminal content with explicit pixel height */}
-      <div style={{ height: contentHeight }} className="overflow-hidden">
-        <CloudTerminal className="w-full h-full" />
-      </div>
-    </div>
+    </>
   );
 }
