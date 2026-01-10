@@ -55,12 +55,12 @@ Done when:
 2. Read docs/HANDOFF-BridgeApiRoutes-v1.0.md (complete instructions)
 3. Update .claude/completion.json with provided contract
 4. Check commitment status - if already claimed, proceed. If not:
-   mentu claim cmt_XXX --author-type executor
+   mentu claim cmt_4dd68c78
 5. Follow Build Order in HANDOFF (5 stages)
 6. Capture evidence:
-   mentu capture 'Progress' --kind execution-progress --author-type executor
+   mentu capture 'Progress' --kind execution-progress
 7. On completion: create RESULT, capture evidence, then:
-   mentu submit cmt_XXX --summary 'Implemented 5 bridge API routes' --include-files
+   mentu submit cmt_4dd68c78 --summary 'Implemented 5 bridge API routes' --include-files
 
 # CONSTRAINTS
 - DO NOT create new files outside the specified paths
@@ -161,7 +161,7 @@ npm run build
 npx tsc --noEmit
 
 # Verify commitment closed
-mentu show cmt_XXX
+mentu show cmt_4dd68c78
 ```
 
 ---

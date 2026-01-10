@@ -114,6 +114,80 @@ export interface Commitment {
   tags?: string[];
   meta?: Record<string, unknown>;
   annotations: Annotation[];
+
+  // Temporal Primitives v1.0
+  scheduled_start_at?: string;
+  duration_estimate?: number;
+  depends_on?: string[];
+  execution_window?: {
+    start: string;
+    end: string;
+    days?: number[];
+  };
+  timezone?: string;
+  priority?: number;
+  late_policy?: 'skip' | 'execute_immediately' | 'reschedule';
+  idempotency_key?: string;
+  cancellation_reason?: 'manual' | 'superseded' | 'missed_window' | 'dependency_failed';
+  earliest_start_at?: string;
+
+  // Temporal Surfaces v2.0
+  actual_start_at?: string;
+  actual_end_at?: string;
+  template_id?: string;
+  instance_key?: string;
+  trigger_source?: 'manual' | 'template' | 'calendar' | 'api';
+  origin_ref?: string;
+  projection_mode?: 'busy' | 'free' | 'tentative';
+}
+
+// Temporal Surfaces v2.0 - Template interface
+export interface CommitmentTemplate {
+  id: string;
+  workspace_id: string;
+  name: string;
+  body_template: string;
+  recurrence: {
+    frequency: 'weekly';
+    days: number[];  // 0-6 (Sunday-Saturday)
+    time: string;    // HH:MM
+    timezone: string;
+  };
+  defaults: {
+    duration_estimate?: number;
+    priority?: number;
+    tags?: string[];
+    source?: string;
+  };
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Temporal Surfaces v2.3 - Calendar connection
+export interface CalendarConnection {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  provider: 'google' | 'microsoft';
+  calendar_id: string;
+  calendar_name?: string;
+  projection_enabled: boolean;
+  trigger_enabled: boolean;
+  keyword_filter?: string;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Temporal Surfaces v2.3 - Calendar sync log
+export interface CalendarSyncLog {
+  id: string;
+  connection_id: string;
+  synced_at: string;
+  events_pushed: number;
+  events_pulled: number;
+  error_message?: string;
 }
 
 // External reference (for GitHub integration)

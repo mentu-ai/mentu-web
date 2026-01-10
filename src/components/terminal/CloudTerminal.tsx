@@ -444,8 +444,16 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
 
       const socket = wsRef.current;
       if (socket) {
+        // Tell server to terminate the session, not just disconnect
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'terminate' }));
+        }
         socket.close();
       }
+
+      // Clear session from localStorage so next time starts fresh
+      const storageKey = sessionKey ? `${SESSION_STORAGE_KEY}_${sessionKey}` : SESSION_STORAGE_KEY;
+      localStorage.removeItem(storageKey);
 
       term.dispose();
     };

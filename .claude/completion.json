@@ -1,20 +1,13 @@
 {
   "version": "2.0",
-  "name": "AgentService",
-  "tier": "T3",
+  "name": "BridgeApiRoutes",
+  "tier": "T2",
   "required_files": [
-    "agent-service/src/index.ts",
-    "agent-service/src/websocket/server.ts",
-    "agent-service/src/websocket/handlers.ts",
-    "agent-service/src/claude/client.ts",
-    "agent-service/src/claude/streaming.ts",
-    "agent-service/src/tools/registry.ts",
-    "agent-service/src/tools/mentu-tools.ts",
-    "agent-service/src/db/supabase.ts",
-    "agent-service/src/db/conversations.ts",
-    "agent-service/src/db/messages.ts",
-    "agent-service/package.json",
-    "agent-service/tsconfig.json"
+    "src/app/api/bridge/spawn/route.ts",
+    "src/app/api/bridge/stop/route.ts",
+    "src/app/api/bridge/dev-server/route.ts",
+    "src/app/api/bridge/create-pr/route.ts",
+    "src/app/api/bridge/merge/route.ts"
   ],
   "checks": {
     "tsc": true,
@@ -30,5 +23,5 @@
       "require_evidence": true
     }
   },
-  "max_iterations": 100
+  "max_iterations": 50
 }

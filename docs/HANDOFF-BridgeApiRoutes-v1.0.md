@@ -95,11 +95,11 @@ cd /Users/rashid/Desktop/Workspaces/mentu-web
 # Check your actor identity (auto-resolved from manifest)
 cat .mentu/manifest.yaml | grep actor
 
-# Claim commitment (actor auto-resolved)
-mentu claim cmt_XXXXXXXX --author-type executor
+# Claim commitment
+mentu claim cmt_4dd68c78
 
-# Capture progress (actor auto-resolved, role declared)
-mentu capture "{Progress}" --kind execution-progress --author-type executor
+# Capture progress
+mentu capture "{Progress}" --kind execution-progress
 ```
 
 Save the commitment ID. You will close it with evidence.
@@ -617,8 +617,7 @@ cat /Users/rashid/Desktop/Workspaces/mentu-ai/docs/templates/TEMPLATE-Result.md
 mentu capture "Created RESULT-BridgeApiRoutes: 5 bridge API routes implemented" \
   --kind result-document \
   --path docs/RESULT-BridgeApiRoutes-v1.0.md \
-  --refs cmt_XXXXXXXX \
-  --author-type executor
+  --refs cmt_4dd68c78
 ```
 
 ### Step 3: Update RESULT Front Matter
@@ -628,7 +627,7 @@ Update the YAML front matter with the evidence ID.
 ### Step 4: Submit with Evidence
 
 ```bash
-mentu submit cmt_XXXXXXXX \
+mentu submit cmt_4dd68c78 \
   --summary "Implemented 5 bridge API routes following proxy pattern" \
   --include-files
 ```

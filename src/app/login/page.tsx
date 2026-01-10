@@ -16,6 +16,7 @@ function LoginForm() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const searchParams = useSearchParams();
+  const returnTo = searchParams.get('return_to');
 
   const supabase = createClient();
 
@@ -54,7 +55,10 @@ function LoginForm() {
     setIsLoading(true);
     setError(null);
 
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    let redirectTo = `${window.location.origin}/auth/callback`;
+    if (returnTo) {
+      redirectTo += `?return_to=${encodeURIComponent(returnTo)}`;
+    }
     addDebug(`Starting GitHub OAuth, redirectTo: ${redirectTo}`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
