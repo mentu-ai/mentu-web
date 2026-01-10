@@ -44,6 +44,7 @@ export const planeConfig: Record<Plane, PlaneConfig> = {
       { id: 'commitments', label: 'Commitments', href: '/commitments' },
       { id: 'memories', label: 'Memories', href: '/memories' },
       { id: 'ledger', label: 'Ledger', href: '/ledger' },
+      { id: 'bug-reports', label: 'Bug Reports', href: '/bug-reports' },
     ]
   }
   // NOTE: Bridge moved to Capability plane

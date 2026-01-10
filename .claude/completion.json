@@ -1,13 +1,15 @@
 {
   "version": "2.0",
-  "name": "BridgeApiRoutes",
-  "tier": "T2",
+  "name": "BugReportsInterface-v1.0",
+  "tier": "T3",
   "required_files": [
-    "src/app/api/bridge/spawn/route.ts",
-    "src/app/api/bridge/stop/route.ts",
-    "src/app/api/bridge/dev-server/route.ts",
-    "src/app/api/bridge/create-pr/route.ts",
-    "src/app/api/bridge/merge/route.ts"
+    "src/app/workspace/[workspace]/[plane]/bug-reports/page.tsx",
+    "src/app/workspace/[workspace]/[plane]/bug-reports/[bugId]/page.tsx",
+    "src/components/bug-report/bug-report-card.tsx",
+    "src/components/bug-report/bug-report-detail.tsx",
+    "src/components/bug-report/workflow-progress.tsx",
+    "src/hooks/useBugReports.ts",
+    "src/hooks/useWorkflowInstance.ts"
   ],
   "checks": {
     "tsc": true,
@@ -23,5 +25,5 @@
       "require_evidence": true
     }
   },
-  "max_iterations": 50
+  "max_iterations": 100
 }
