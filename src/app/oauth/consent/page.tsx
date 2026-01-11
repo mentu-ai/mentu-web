@@ -18,7 +18,7 @@ function ConsentForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [appDetails, setAppDetails] = useState<OAuthAppDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const supabase = createClient();

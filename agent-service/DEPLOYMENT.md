@@ -11,10 +11,10 @@
 │       ▼                                                                     │
 │  mentu-web (Vercel)                                                         │
 │       │                                                                     │
-│       │ WebSocket: wss://mentu.rashidazarang.com/agent                     │
+│       │ WebSocket: wss://agent.mentu.ai/agent                              │
 │       ▼                                                                     │
 │  ┌─────────────────┐                                                        │
-│  │  Nginx (VPS)    │  SSL termination, reverse proxy                       │
+│  │  Caddy (VPS)    │  SSL termination, reverse proxy                       │
 │  │  :443 → :8081   │                                                        │
 │  └────────┬────────┘                                                        │
 │           │                                                                 │
@@ -47,7 +47,7 @@ The Claude Agent SDK uses OAuth tokens stored locally on the machine where Claud
 2. **Claude Code Auth**: Run `claude` on VPS and authenticate with OAuth
 3. **Node.js**: v18+ installed on VPS
 4. **PM2**: For process management
-5. **Nginx**: For SSL termination and reverse proxy
+5. **Caddy**: For SSL termination and reverse proxy (already configured)
 
 ## Deployment Steps
 
@@ -81,18 +81,14 @@ Create `.env` on VPS:
 cat > .env << 'EOF'
 # Server
 PORT=8081
-NODE_ENV=production
-REQUIRE_AUTH=true
-LOG_LEVEL=info
 
 # Supabase
 SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_SERVICE_KEY=xxx
-
-# Security
-ALLOWED_ORIGINS=https://mentu.ai,https://www.mentu.ai
 EOF
 ```
+
+**IMPORTANT**: Do NOT set `ANTHROPIC_API_KEY` in .env. The service uses OAuth tokens from Claude Code authentication, not API keys.
 
 ### 4. Authenticate Claude Code
 
@@ -107,55 +103,44 @@ claude
 ### 5. Start with PM2
 
 ```bash
-# Build (if using TypeScript compilation)
+# Build TypeScript
 npm run build
 
-# Start with PM2
-pm2 start npm --name "agent-service" -- run start
-pm2 save
+# Start with PM2 (uses server.js which imports from dist/)
+cd /home/mentu/Workspaces/mentu-web/agent-service
+npx pm2 start server.js --name agent-service
+npx pm2 save
 
-# Or for development with hot reload:
-pm2 start npm --name "agent-service" -- run dev
+# To restart after changes:
+npm run build
+npx pm2 restart agent-service
 ```
 
-### 6. Configure Nginx
+### 6. Configure Caddy (already done)
 
-Add to `/etc/nginx/sites-available/mentu`:
+The VPS uses Caddy for reverse proxy. The configuration is in `/home/mentu/mentu-vps/config/caddy/Caddyfile`:
 
-```nginx
-# WebSocket proxy for agent service
-location /agent {
-    proxy_pass http://127.0.0.1:8081;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    # WebSocket timeouts
-    proxy_read_timeout 86400;
-    proxy_send_timeout 86400;
-}
-
-# Health check endpoint
-location /agent-health {
-    proxy_pass http://127.0.0.1:8081/health;
-    proxy_set_header Host $host;
+```caddyfile
+agent.mentu.ai {
+    handle /agent* {
+        reverse_proxy localhost:8081
+    }
+    handle /health {
+        reverse_proxy localhost:8081
+    }
+    handle {
+        respond "Agent Service" 200
+    }
 }
 ```
 
-Reload Nginx:
-```bash
-sudo nginx -t && sudo systemctl reload nginx
-```
+Caddy automatically handles SSL certificates via Let's Encrypt.
 
 ### 7. Update Frontend
 
 In mentu-web, update `.env.production`:
 ```
-NEXT_PUBLIC_AGENT_WS_URL=wss://mentu.rashidazarang.com/agent
+NEXT_PUBLIC_AGENT_WS_URL=wss://agent.mentu.ai/agent
 ```
 
 ## Security Features
@@ -187,7 +172,7 @@ NEXT_PUBLIC_AGENT_WS_URL=wss://mentu.rashidazarang.com/agent
 
 ### Health Check
 ```bash
-curl https://mentu.rashidazarang.com/agent-health
+curl https://agent.mentu.ai/health
 # {"status":"ok","service":"agent-service"}
 ```
 
@@ -221,9 +206,8 @@ claude
 
 ### WebSocket Not Connecting
 ```bash
-# Check Nginx config
-sudo nginx -t
-sudo systemctl status nginx
+# Check Caddy status
+sudo systemctl status caddy
 
 # Check WebSocket headers
 curl -i -N \
@@ -231,7 +215,7 @@ curl -i -N \
   -H "Upgrade: websocket" \
   -H "Sec-WebSocket-Version: 13" \
   -H "Sec-WebSocket-Key: test" \
-  https://mentu.rashidazarang.com/agent
+  https://agent.mentu.ai/agent
 ```
 
 ### Rate Limited

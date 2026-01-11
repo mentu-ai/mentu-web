@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       const scope = prevToken?.scope || 'read';
 
       // Insert new access token
-      const { data: newToken, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('oauth_access_tokens')
         .insert({
           token: newAccessToken,

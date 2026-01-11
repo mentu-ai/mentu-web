@@ -1,7 +1,6 @@
 import { query, type Options } from '@anthropic-ai/claude-agent-sdk';
-
-// Default model - Agent SDK handles model selection internally
-export const MODEL = 'claude-sonnet-4-20250514';
+import type { HistoryMessage } from './history.js';
+import { buildPromptWithHistory } from './history.js';
 
 // Maximum turns to prevent runaway agents
 export const MAX_TURNS = 25;
@@ -33,25 +32,46 @@ If a user asks you to spawn agents or run claude commands, politely decline and 
 // - Arbitrary code execution
 const SAFE_TOOLS = ['Read', 'Glob', 'Grep'];
 
-// Create an agent query with streaming
-export function createAgentQuery(prompt: string, customOptions?: Partial<Options>) {
+/**
+ * Extended options that include conversation history
+ */
+export interface AgentQueryOptions extends Partial<Options> {
+  /** Previous conversation messages for context */
+  history?: HistoryMessage[];
+}
+
+/**
+ * Create an agent query with streaming
+ *
+ * @param prompt - The current user message
+ * @param customOptions - Options including optional conversation history
+ */
+export function createAgentQuery(prompt: string, customOptions?: AgentQueryOptions) {
+  // Extract history from options
+  const { history, ...restOptions } = customOptions || {};
+
+  // Build prompt with history context if available
+  const fullPrompt = history && history.length > 0
+    ? buildPromptWithHistory(prompt, history)
+    : prompt;
+
   // Build secure options - enforce security settings even if customOptions tries to override
   const secureOptions: Partial<Options> = {
     systemPrompt: SYSTEM_PROMPT,
     // Read-only mode - no file edits
     permissionMode: 'default',
     // Merge custom options first
-    ...customOptions,
+    ...restOptions,
   };
 
   // SECURITY: Always enforce safe tools and max turns (cannot be overridden)
-  secureOptions.allowedTools = customOptions?.allowedTools
-    ? customOptions.allowedTools.filter(t => SAFE_TOOLS.includes(t))
+  secureOptions.allowedTools = restOptions?.allowedTools
+    ? restOptions.allowedTools.filter(t => SAFE_TOOLS.includes(t))
     : SAFE_TOOLS;
-  secureOptions.maxTurns = Math.min(customOptions?.maxTurns || MAX_TURNS, MAX_TURNS);
+  secureOptions.maxTurns = Math.min(restOptions?.maxTurns || MAX_TURNS, MAX_TURNS);
 
   return query({
-    prompt,
+    prompt: fullPrompt,
     options: secureOptions,
   });
 }

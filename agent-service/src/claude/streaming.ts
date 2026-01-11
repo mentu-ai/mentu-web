@@ -1,6 +1,7 @@
 import { WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { createAgentQuery } from './client.js';
+import { getConversationHistory, type HistoryMessage } from './history.js';
 import { saveMessage } from '../db/messages.js';
 import { agentLogger } from '../utils/logger.js';
 import type { WSAssistantChunk, WSToolUse, WSToolResult, WSDone } from '../websocket/types.js';
@@ -17,9 +18,45 @@ export async function processUserMessage(
   const startTime = Date.now();
 
   try {
-    // Use Agent SDK query - it handles the agentic loop automatically
+    // Fetch conversation history for context
+    const historyStartTime = Date.now();
+    let history: HistoryMessage[];
+
+    try {
+      history = await getConversationHistory(conversationId, {
+        maxPairs: 20,      // Last 20 exchanges
+        maxChars: 100000,  // ~25k tokens estimate
+      });
+    } catch (error) {
+      // If history fetch fails, continue without context (graceful degradation)
+      agentLogger.warn('History fetch failed, continuing without context', {
+        conversationId,
+        requestId,
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      history = [];
+    }
+
+    const historyFetchTime = Date.now() - historyStartTime;
+    const estimatedTokens = Math.floor(
+      history.reduce((sum, m) => sum + m.content.length, 0) / 4
+    );
+
+    agentLogger.debug('Loaded conversation history', {
+      conversationId,
+      requestId,
+      metadata: {
+        messageCount: history.length,
+        estimatedTokens,
+        fetchTimeMs: historyFetchTime,
+      },
+    });
+
+    // Use Agent SDK query with history context
     // Authentication uses CLAUDE_CODE_OAUTH_TOKEN from Claude Code's auth
-    const agentStream = createAgentQuery(content);
+    const agentStream = createAgentQuery(content, { history });
 
     for await (const message of agentStream) {
       // Handle different message types from Agent SDK
@@ -88,14 +125,18 @@ export async function processUserMessage(
                 },
               });
 
-              // Save tool result to DB
+              // Save tool result to DB (truncate if very long)
+              const resultContent = typeof toolResultBlock.content === 'string'
+                ? toolResultBlock.content
+                : JSON.stringify(toolResultBlock.content);
+
               await saveMessage({
                 id: `result_${toolResultBlock.tool_use_id}`,
                 conversation_id: conversationId,
                 role: 'tool_result',
-                content: typeof toolResultBlock.content === 'string'
-                  ? toolResultBlock.content
-                  : JSON.stringify(toolResultBlock.content),
+                content: resultContent.length > 50000
+                  ? resultContent.slice(0, 50000) + '\n[truncated for storage]'
+                  : resultContent,
               });
             }
           }
@@ -110,6 +151,7 @@ export async function processUserMessage(
             subtype: message.subtype,
             toolCallCount,
             responseLength: fullContent.length,
+            historyLength: history.length,
           },
         });
       }

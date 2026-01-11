@@ -26,18 +26,27 @@ export async function saveMessage(message: Omit<AgentMessage, 'created_at'>): Pr
 }
 
 export async function getConversationMessages(
-  conversationId: string
+  conversationId: string,
+  limit?: number
 ): Promise<AgentMessage[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('agent_messages')
     .select('*')
     .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false });  // DESC to get most recent first
+
+  // Apply limit if specified (fetch only what we need)
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Failed to get messages:', error);
     return [];
   }
 
-  return (data || []) as AgentMessage[];
+  // Reverse to chronological order (oldest first)
+  return ((data || []) as AgentMessage[]).reverse();
 }
