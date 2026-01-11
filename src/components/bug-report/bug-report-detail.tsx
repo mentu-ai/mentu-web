@@ -1,12 +1,13 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Bug, Check, X, Terminal, MousePointer, Globe, Monitor, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { Bug, Check, X, Terminal, MousePointer, Globe, Monitor, AlertCircle, AlertTriangle, Info, Camera } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { WorkflowProgressExpanded } from "./workflow-progress";
+import { ScreenshotViewer } from "./screenshot-viewer";
 import { cn } from "@/lib/utils";
 import type { BugReport, ConsoleLog } from "@/hooks/useBugReports";
 import type { WorkflowInstance } from "@/hooks/useWorkflowInstance";
@@ -131,6 +132,21 @@ export function BugReportDetail({
           </div>
         </CardContent>
       </Card>
+
+      {/* Screenshot */}
+      {bug.screenshot_url && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              Screenshot
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScreenshotViewer screenshot_url={bug.screenshot_url} alt={`Screenshot of ${bug.title}`} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Environment */}
       {bug.environment && (

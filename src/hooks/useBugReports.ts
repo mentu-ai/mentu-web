@@ -57,6 +57,7 @@ export interface BugReport {
   status: BugStatus;
   // Rich diagnostic data
   screenshot?: string;
+  screenshot_url?: string;
   console_logs?: ConsoleLog[];
   behavior_trace?: BehaviorEvent[];
   selected_element?: SelectedElement;
@@ -146,15 +147,26 @@ export function useBugReports(workspaceId: string) {
         undefined  // current_step - would need workflow_instances table query
       );
 
-      // Extract diagnostic data from payload
-      const diagnosticData = (payload as unknown as Record<string, unknown>).diagnostic_data as {
+      // Extract meta first
+      const meta = payload.meta as Record<string, unknown> | undefined;
+
+      // Debug logging for screenshot_url extraction
+      if (mem.id === 'mem_8cpnv520') {
+        console.log('[useBugReports] Debug mem_8cpnv520:', {
+          hasPayload: !!payload,
+          hasMeta: !!meta,
+          metaKeys: meta ? Object.keys(meta) : [],
+          screenshot_url: meta?.screenshot_url,
+          has_screenshot: meta?.has_screenshot,
+        });
+      }
+
+      // Extract diagnostic data from meta.diagnostic_data (not top-level)
+      const diagnosticData = meta?.diagnostic_data as {
         console_logs?: ConsoleLog[];
         behavior_trace?: BehaviorEvent[];
         selected_element?: SelectedElement;
       } | undefined;
-
-      // Extract environment from meta
-      const meta = payload.meta as Record<string, unknown> | undefined;
       const environment: BugEnvironment | undefined = meta ? {
         page_url: meta.page_url as string,
         browser: meta.browser as string,
@@ -179,6 +191,7 @@ export function useBugReports(workspaceId: string) {
         commitment_state: commitmentState,
         status,
         // Rich diagnostic data
+        screenshot_url: meta?.screenshot_url as string,
         console_logs: diagnosticData?.console_logs,
         behavior_trace: diagnosticData?.behavior_trace,
         selected_element: diagnosticData?.selected_element,
