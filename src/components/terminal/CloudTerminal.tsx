@@ -457,7 +457,7 @@ export function CloudTerminal({ className, autoStartAgent = true, sessionKey }: 
 
       term.dispose();
     };
-  }, [connect, clearHeartbeat, clearReconnectTimeout]);
+  }, [connect, clearHeartbeat, clearReconnectTimeout, sessionKey]);
 
   // Status display
   const getStatusDisplay = () => {
