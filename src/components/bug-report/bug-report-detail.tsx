@@ -252,7 +252,14 @@ export function BugReportDetail({
               {bug.behavior_trace.map((event, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs p-2 bg-muted rounded">
                   <Badge variant="outline" className="text-[10px]">{event.type}</Badge>
-                  {event.target && (
+                  {event.target && typeof event.target === 'object' && (
+                    <span className="font-mono text-muted-foreground truncate">
+                      {(event.target as { selector?: string; tagName?: string }).selector ||
+                       (event.target as { selector?: string; tagName?: string }).tagName ||
+                       'element'}
+                    </span>
+                  )}
+                  {event.target && typeof event.target === 'string' && (
                     <span className="font-mono text-muted-foreground truncate">{event.target}</span>
                   )}
                   <span className="text-muted-foreground ml-auto">

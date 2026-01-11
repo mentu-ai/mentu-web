@@ -1,169 +1,121 @@
 import { WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import type Anthropic from '@anthropic-ai/sdk';
-import { createMessageStream } from './client.js';
-import { executeTool } from '../tools/registry.js';
-import { getConversationMessages, saveMessage } from '../db/messages.js';
+import { createAgentQuery } from './client.js';
+import { saveMessage } from '../db/messages.js';
+import { agentLogger } from '../utils/logger.js';
 import type { WSAssistantChunk, WSToolUse, WSToolResult, WSDone } from '../websocket/types.js';
 
 export async function processUserMessage(
   ws: WebSocket,
   conversationId: string,
-  content: string
-): Promise<void> {
-  // Load conversation history
-  const history = await getConversationMessages(conversationId);
-
-  // Convert to Anthropic format
-  const messages: Anthropic.MessageParam[] = history.map((msg) => {
-    if (msg.role === 'tool_use') {
-      return {
-        role: 'assistant' as const,
-        content: [{
-          type: 'tool_use' as const,
-          id: msg.id,
-          name: msg.tool_name || 'unknown',
-          input: msg.tool_input || {},
-        }],
-      };
-    }
-    if (msg.role === 'tool_result') {
-      return {
-        role: 'user' as const,
-        content: [{
-          type: 'tool_result' as const,
-          tool_use_id: msg.id.replace('result_', ''),
-          content: msg.content,
-        }],
-      };
-    }
-    return {
-      role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
-      content: msg.content,
-    };
-  });
-
-  // Add current user message
-  messages.push({ role: 'user', content });
-
-  // Process with Claude
-  await streamClaudeResponse(ws, conversationId, messages);
-}
-
-async function streamClaudeResponse(
-  ws: WebSocket,
-  conversationId: string,
-  messages: Anthropic.MessageParam[]
+  content: string,
+  requestId?: string
 ): Promise<void> {
   const messageId = uuidv4();
   let fullContent = '';
+  let toolCallCount = 0;
+  const startTime = Date.now();
 
   try {
-    const stream = await createMessageStream(messages);
+    // Use Agent SDK query - it handles the agentic loop automatically
+    // Authentication uses CLAUDE_CODE_OAUTH_TOKEN from Claude Code's auth
+    const agentStream = createAgentQuery(content);
 
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta') {
-        if (event.delta.type === 'text_delta') {
-          const chunk = event.delta.text;
-          fullContent += chunk;
+    for await (const message of agentStream) {
+      // Handle different message types from Agent SDK
+      if (message.type === 'assistant') {
+        // Assistant message with content blocks
+        if (message.message?.content) {
+          for (const block of message.message.content) {
+            if ('text' in block && block.text) {
+              fullContent += block.text;
 
-          // Send chunk to client
-          sendToClient<WSAssistantChunk>(ws, {
-            type: 'assistant_chunk',
-            conversation_id: conversationId,
-            data: { delta: chunk, message_id: messageId },
-          });
-        }
-      } else if (event.type === 'message_delta') {
-        if (event.delta.stop_reason === 'tool_use') {
-          // Handle tool uses
-          const finalMessage = await stream.finalMessage();
+              // Stream text chunk to client
+              sendToClient<WSAssistantChunk>(ws, {
+                type: 'assistant_chunk',
+                conversation_id: conversationId,
+                data: { delta: block.text, message_id: messageId },
+              });
+            } else if ('name' in block) {
+              // Tool use block
+              toolCallCount++;
+              const toolId = 'id' in block ? block.id : uuidv4();
 
-          for (const block of finalMessage.content) {
-            if (block.type === 'tool_use') {
-              // Notify client of tool use
+              agentLogger.debug('Tool use', {
+                conversationId,
+                requestId,
+                metadata: { tool: block.name, toolId, callNumber: toolCallCount },
+              });
+
               sendToClient<WSToolUse>(ws, {
                 type: 'tool_use',
                 conversation_id: conversationId,
                 data: {
-                  tool_call_id: block.id,
+                  tool_call_id: toolId,
                   tool: block.name,
-                  input: block.input as Record<string, unknown>,
+                  input: 'input' in block ? block.input as Record<string, unknown> : {},
                 },
               });
 
               // Save tool use to DB
               await saveMessage({
-                id: block.id,
+                id: toolId,
                 conversation_id: conversationId,
                 role: 'tool_use',
                 content: '',
                 tool_name: block.name,
-                tool_input: block.input as Record<string, unknown>,
+                tool_input: 'input' in block ? block.input as Record<string, unknown> : {},
               });
+            }
+          }
+        }
+      } else if (message.type === 'user') {
+        // Tool result from Agent SDK (it handles tool execution internally)
+        if (message.message?.content) {
+          for (const block of message.message.content) {
+            if ('type' in block && block.type === 'tool_result') {
+              const toolResultBlock = block as { tool_use_id: string; content: string };
 
-              // Execute tool
-              const result = await executeTool(block.name, block.input as Record<string, unknown>);
-
-              // Notify client of result
               sendToClient<WSToolResult>(ws, {
                 type: 'tool_result',
                 conversation_id: conversationId,
                 data: {
-                  tool_call_id: block.id,
-                  output: result.output,
-                  is_error: result.is_error,
+                  tool_call_id: toolResultBlock.tool_use_id,
+                  output: typeof toolResultBlock.content === 'string'
+                    ? toolResultBlock.content
+                    : JSON.stringify(toolResultBlock.content),
+                  is_error: false,
                 },
               });
 
               // Save tool result to DB
               await saveMessage({
-                id: `result_${block.id}`,
+                id: `result_${toolResultBlock.tool_use_id}`,
                 conversation_id: conversationId,
                 role: 'tool_result',
-                content: result.output,
+                content: typeof toolResultBlock.content === 'string'
+                  ? toolResultBlock.content
+                  : JSON.stringify(toolResultBlock.content),
               });
             }
           }
-
-          // Continue conversation with tool results
-          const updatedHistory = await getConversationMessages(conversationId);
-          const updatedMessages: Anthropic.MessageParam[] = updatedHistory.map((msg) => {
-            if (msg.role === 'tool_use') {
-              return {
-                role: 'assistant' as const,
-                content: [{
-                  type: 'tool_use' as const,
-                  id: msg.id,
-                  name: msg.tool_name || 'unknown',
-                  input: msg.tool_input || {},
-                }],
-              };
-            }
-            if (msg.role === 'tool_result') {
-              return {
-                role: 'user' as const,
-                content: [{
-                  type: 'tool_result' as const,
-                  tool_use_id: msg.id.replace('result_', ''),
-                  content: msg.content,
-                }],
-              };
-            }
-            return {
-              role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
-              content: msg.content,
-            };
-          });
-
-          // Recursive call to continue processing
-          await streamClaudeResponse(ws, conversationId, updatedMessages);
-          return;
         }
+      } else if (message.type === 'result') {
+        // Final result from Agent SDK
+        agentLogger.info('Agent completed', {
+          conversationId,
+          requestId,
+          duration: Date.now() - startTime,
+          metadata: {
+            subtype: message.subtype,
+            toolCallCount,
+            responseLength: fullContent.length,
+          },
+        });
       }
     }
 
-    // Save assistant message
+    // Save assistant message if we have content
     if (fullContent) {
       await saveMessage({
         id: messageId,
@@ -180,12 +132,38 @@ async function streamClaudeResponse(
       data: { message_id: messageId },
     });
   } catch (error) {
-    console.error('Error streaming Claude response:', error);
-    sendToClient(ws, {
-      type: 'error',
-      conversation_id: conversationId,
-      data: { message: 'Failed to get response from Claude' },
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    agentLogger.error('Agent error', {
+      conversationId,
+      requestId,
+      duration: Date.now() - startTime,
+      metadata: {
+        error: errorMessage,
+        toolCallCount,
+      },
     });
+
+    // Handle common errors with user-friendly messages
+    if (errorMessage.includes('Claude Code not found')) {
+      sendToClient(ws, {
+        type: 'error',
+        conversation_id: conversationId,
+        data: { message: 'Claude Code CLI not installed. Run: npm install -g @anthropic-ai/claude-code' },
+      });
+    } else if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
+      sendToClient(ws, {
+        type: 'error',
+        conversation_id: conversationId,
+        data: { message: 'Authentication failed. Run "claude" in terminal to authenticate with OAuth.' },
+      });
+    } else {
+      sendToClient(ws, {
+        type: 'error',
+        conversation_id: conversationId,
+        data: { message: `Failed to get response: ${errorMessage}` },
+      });
+    }
   }
 }
 

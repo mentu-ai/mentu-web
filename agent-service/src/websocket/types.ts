@@ -7,7 +7,9 @@ export type WSMessageType =
   | 'tool_use'
   | 'tool_result'
   | 'error'
-  | 'done';
+  | 'done'
+  | 'ping'
+  | 'pong';
 
 export interface WSMessage {
   type: WSMessageType;

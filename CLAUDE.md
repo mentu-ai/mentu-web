@@ -141,6 +141,42 @@ MENTU_API_URL                 # Mentu API endpoint
 MENTU_WORKSPACE_ID            # Default workspace ID
 ```
 
+## Authentication (Agent Service)
+
+The agent service (`agent-service/`) uses the **Claude Agent SDK** which automatically uses your Claude Code OAuth token:
+
+```typescript
+// agent-service/src/claude/client.ts
+import { query, type Options } from '@anthropic-ai/claude-agent-sdk';
+
+// Agent SDK auto-detects Claude Code authentication
+export function createAgentQuery(prompt: string, options?: Partial<Options>) {
+  return query({
+    prompt,
+    options: {
+      systemPrompt: SYSTEM_PROMPT,
+      allowedTools: ['Read', 'Glob', 'Grep', 'Bash', 'Edit', 'Write'],
+      permissionMode: 'acceptEdits',
+      ...options,
+    },
+  });
+}
+```
+
+**Authentication**: The Agent SDK automatically uses `CLAUDE_CODE_OAUTH_TOKEN` from Claude Code's authentication. This means:
+- Uses Max subscription ($200/mo unlimited) instead of per-API-call billing
+- No need to set `ANTHROPIC_API_KEY` for the agent service
+- Claude Code must be authenticated on the machine running the agent service
+
+### Running the Agent Service
+
+```bash
+cd agent-service
+npm run dev  # Starts on port 8081
+```
+
+See `Workspaces/CLAUDE.md` for the full authentication convention.
+
 ## Agent Entry Protocol
 
 When entering this repo:

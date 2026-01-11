@@ -16,9 +16,22 @@ export interface ConsoleLog {
 
 export interface BehaviorEvent {
   type: string;
-  target?: string;
+  target?: string | {
+    text?: string;
+    type?: string;
+    tagName?: string;
+    selector?: string;
+    className?: string;
+    attributes?: Record<string, string>;
+    boundingRect?: {
+      top: number;
+      left: number;
+      width: number;
+      height: number;
+    };
+  };
   timestamp: number;
-  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SelectedElement {
@@ -149,17 +162,6 @@ export function useBugReports(workspaceId: string) {
 
       // Extract meta first
       const meta = payload.meta as Record<string, unknown> | undefined;
-
-      // Debug logging for screenshot_url extraction
-      if (mem.id === 'mem_8cpnv520') {
-        console.log('[useBugReports] Debug mem_8cpnv520:', {
-          hasPayload: !!payload,
-          hasMeta: !!meta,
-          metaKeys: meta ? Object.keys(meta) : [],
-          screenshot_url: meta?.screenshot_url,
-          has_screenshot: meta?.has_screenshot,
-        });
-      }
 
       // Extract diagnostic data from meta.diagnostic_data (not top-level)
       const diagnosticData = meta?.diagnostic_data as {
