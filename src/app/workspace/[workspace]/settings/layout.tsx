@@ -3,6 +3,7 @@ import { TopNav } from '@/components/nav/TopNav';
 import { SettingsSidebar } from '@/components/layout/SettingsSidebar';
 import { TerminalProvider } from '@/contexts/TerminalContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
+import { AgentChatProvider } from '@/contexts/AgentChatContext';
 import { TerminalPanel } from '@/components/ide/TerminalPanel';
 import { ResizableSidebar } from '@/components/ide/ResizableSidebar';
 import {
@@ -25,28 +26,30 @@ export default async function SettingsLayout({ children, params }: SettingsLayou
   return (
     <TerminalProvider>
       <SidebarProvider>
-        <IDELayout>
-          <TopNav />
-          <IDEBody>
-            {/* Left Panel - Settings Navigation */}
-            <ResizableSidebar>
-              <SettingsSidebar
-                workspaceName={workspace}
-                user={user ? { email: user.email } : undefined}
-              />
-            </ResizableSidebar>
+        <AgentChatProvider>
+          <IDELayout>
+            <TopNav />
+            <IDEBody>
+              {/* Left Panel - Settings Navigation */}
+              <ResizableSidebar>
+                <SettingsSidebar
+                  workspaceName={workspace}
+                  user={user ? { email: user.email } : undefined}
+                />
+              </ResizableSidebar>
 
-            {/* Main Area - Settings Content + Terminal */}
-            <IDEMain>
-              <IDEEditor className="p-8 bg-zinc-50 dark:bg-zinc-950">
-                <div className="max-w-3xl">
-                  {children}
-                </div>
-              </IDEEditor>
-              <TerminalPanel />
-            </IDEMain>
-          </IDEBody>
-        </IDELayout>
+              {/* Main Area - Settings Content + Terminal */}
+              <IDEMain>
+                <IDEEditor className="p-8 bg-zinc-50 dark:bg-zinc-950">
+                  <div className="max-w-3xl">
+                    {children}
+                  </div>
+                </IDEEditor>
+                <TerminalPanel />
+              </IDEMain>
+            </IDEBody>
+          </IDELayout>
+        </AgentChatProvider>
       </SidebarProvider>
     </TerminalProvider>
   );
