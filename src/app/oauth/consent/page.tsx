@@ -112,7 +112,7 @@ function ConsentForm() {
         p_user_id: user.id,
         p_redirect_uri: redirectUri,
         p_scope: appDetails.scopes.join(' '),
-      });
+      } as never);
 
       if (codeError || !data) {
         setError('Failed to generate authorization code');
