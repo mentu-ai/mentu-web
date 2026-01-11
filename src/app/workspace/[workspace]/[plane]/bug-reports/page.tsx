@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BugReportCard } from "@/components/bug-report/bug-report-card";
 import { useBugReports, type BugStatus } from "@/hooks/useBugReports";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useRealtimeOperations } from "@/hooks/useRealtime";
 
 const STATUS_TABS: { value: BugStatus; label: string; icon: React.ElementType }[] = [
   { value: "inbox", label: "Inbox", icon: Inbox },
@@ -24,6 +25,9 @@ export default function BugReportsPage() {
 
   const { data: workspace } = useWorkspace(workspaceSlug);
   const { bugsByStatus, isLoading, error } = useBugReports(workspace?.id || "");
+
+  // Enable real-time updates
+  useRealtimeOperations(workspace?.id);
 
   if (error) {
     return (
