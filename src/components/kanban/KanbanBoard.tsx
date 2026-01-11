@@ -10,9 +10,10 @@ interface KanbanBoardProps {
   selectedId: string | null;
   onCardClick: (id: string) => void;
   runningCommitmentIds?: string[];
+  bugReportCommitmentIds?: Set<string>;
 }
 
-export function KanbanBoard({ columns, selectedId, onCardClick, runningCommitmentIds = [] }: KanbanBoardProps) {
+export function KanbanBoard({ columns, selectedId, onCardClick, runningCommitmentIds = [], bugReportCommitmentIds = new Set() }: KanbanBoardProps) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {COLUMN_ORDER.map((column) => (
@@ -23,6 +24,7 @@ export function KanbanBoard({ columns, selectedId, onCardClick, runningCommitmen
           selectedId={selectedId}
           onCardClick={onCardClick}
           runningCommitmentIds={runningCommitmentIds}
+          bugReportCommitmentIds={bugReportCommitmentIds}
         />
       ))}
     </div>

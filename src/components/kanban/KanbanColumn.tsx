@@ -45,6 +45,7 @@ interface KanbanColumnProps {
   selectedId: string | null;
   onCardClick: (id: string) => void;
   runningCommitmentIds?: string[];
+  bugReportCommitmentIds?: Set<string>;
 }
 
 export function KanbanColumn({
@@ -53,6 +54,7 @@ export function KanbanColumn({
   selectedId,
   onCardClick,
   runningCommitmentIds = [],
+  bugReportCommitmentIds = new Set(),
 }: KanbanColumnProps) {
   const config = columnConfig[column];
 
@@ -83,6 +85,7 @@ export function KanbanColumn({
               commitment={commitment}
               isSelected={selectedId === commitment.id}
               isRunning={runningCommitmentIds.includes(commitment.id)}
+              isBugReport={bugReportCommitmentIds.has(commitment.id)}
               onClick={() => onCardClick(commitment.id)}
             />
           ))

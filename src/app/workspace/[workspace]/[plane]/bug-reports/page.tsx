@@ -35,9 +35,14 @@ export default function BugReportsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <Bug className="h-6 w-6" />
-        <h1 className="text-2xl font-semibold">Bug Reports</h1>
+      <div>
+        <div className="flex items-center gap-3">
+          <Bug className="h-6 w-6" />
+          <h1 className="text-2xl font-semibold">Bug Reports</h1>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          Filtered view of commitments sourced from bug report memories
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BugStatus)}>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Users, Github, Webhook, ChevronRight } from 'lucide-react';
+import { Users, Github, Webhook, Bug, ChevronRight } from 'lucide-react';
 
 interface SettingsPageProps {
   workspaceName: string;
@@ -26,6 +26,12 @@ const settingsLinks = [
     description: 'Debug webhook activity',
     href: '/settings/webhooks',
     icon: Webhook,
+  },
+  {
+    name: 'Bug Reports',
+    description: 'Configure autonomous and human-in-the-loop approval',
+    href: '/settings/bug-reports',
+    icon: Bug,
   },
 ];
 

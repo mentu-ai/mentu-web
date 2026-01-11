@@ -4,7 +4,7 @@ import type { Commitment } from '@/lib/mentu/types';
 import { Badge } from '@/components/ui/badge';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TreeDeciduous, GitPullRequest, User, Loader2 } from 'lucide-react';
+import { TreeDeciduous, GitPullRequest, User, Loader2, Bug } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CommitmentCardProps {
@@ -12,9 +12,10 @@ interface CommitmentCardProps {
   onClick: () => void;
   isSelected?: boolean;
   isRunning?: boolean;
+  isBugReport?: boolean;
 }
 
-export function CommitmentCard({ commitment, onClick, isSelected, isRunning }: CommitmentCardProps) {
+export function CommitmentCard({ commitment, onClick, isSelected, isRunning, isBugReport }: CommitmentCardProps) {
   const hasWorktree = commitment.state === 'claimed' || commitment.state === 'in_review' || commitment.state === 'reopened';
 
   return (
@@ -26,7 +27,8 @@ export function CommitmentCard({ commitment, onClick, isSelected, isRunning }: C
         isSelected
           ? 'border-blue-500 dark:border-blue-400 ring-1 ring-blue-500 dark:ring-blue-400'
           : 'border-zinc-200 dark:border-zinc-800',
-        isRunning && 'border-blue-300 dark:border-blue-600'
+        isRunning && 'border-blue-300 dark:border-blue-600',
+        isBugReport && 'border-l-4 border-l-red-500'
       )}
     >
       {/* Running indicator */}
@@ -60,6 +62,18 @@ export function CommitmentCard({ commitment, onClick, isSelected, isRunning }: C
 
       {/* Meta info row */}
       <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        {/* Bug report indicator */}
+        {isBugReport && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex items-center gap-0.5 text-red-600 dark:text-red-400">
+                <Bug className="h-3 w-3" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Bug report</TooltipContent>
+          </Tooltip>
+        )}
+
         {/* Worktree indicator */}
         {hasWorktree && (
           <Tooltip>

@@ -21,7 +21,7 @@ export function KanbanPage({ workspaceName, workspaceId }: KanbanPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDebug, setShowDebug] = useState(false);
 
-  const { columns, counts, operationStats, isLoading, refetch } = useKanbanCommitments(workspaceId);
+  const { columns, counts, operationStats, bugReportCommitmentIds, isLoading, refetch } = useKanbanCommitments(workspaceId);
   const { data: bridgeCommands } = useBridgeCommands(workspaceId);
   useRealtimeOperations(workspaceId);
 
@@ -166,6 +166,7 @@ export function KanbanPage({ workspaceName, workspaceId }: KanbanPageProps) {
               selectedId={selectedId}
               onCardClick={handleCardClick}
               runningCommitmentIds={runningCommitmentIds}
+              bugReportCommitmentIds={bugReportCommitmentIds}
             />
           )}
         </div>

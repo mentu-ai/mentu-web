@@ -47,12 +47,12 @@ export function useBugReports(workspaceId: string) {
   const bugReports = useMemo(() => {
     if (!operations) return [];
 
-    // Filter for bug_report memories (capture operations with kind bug_report)
+    // Filter for bug memories (capture operations with kind bug or bug_report)
     const bugMemories = operations.filter(
       (op: OperationRow) => {
         if (op.op !== "capture") return false;
         const payload = op.payload as CapturePayload;
-        return payload?.kind === "bug_report";
+        return payload?.kind === "bug_report" || payload?.kind === "bug";
       }
     );
 

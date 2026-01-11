@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useOperations } from './useOperations';
 import { computeCommitments } from '@/lib/mentu/state';
-import type { Commitment, CommitmentState, OperationRow } from '@/lib/mentu/types';
+import type { Commitment, CommitmentState, OperationRow, CapturePayload } from '@/lib/mentu/types';
 
 export type KanbanColumn = 'todo' | 'in_progress' | 'in_review' | 'done' | 'cancelled';
 
@@ -104,10 +104,37 @@ export function useKanbanCommitments(workspaceId: string | undefined) {
     total: commitments.length,
   }), [columns, commitments.length]);
 
+  // Compute bug report commitment IDs (commitments sourced from bug/bug_report memories)
+  const bugReportCommitmentIds = useMemo(() => {
+    if (!operations) return new Set<string>();
+
+    // Build a set of memory IDs that are bug reports
+    const bugMemoryIds = new Set<string>();
+    operations.forEach((op: OperationRow) => {
+      if (op.op === 'capture') {
+        const payload = op.payload as CapturePayload;
+        if (payload?.kind === 'bug' || payload?.kind === 'bug_report') {
+          bugMemoryIds.add(op.id);
+        }
+      }
+    });
+
+    // Find commitments that have a bug memory as source
+    const bugCommitmentIds = new Set<string>();
+    commitments.forEach((c: Commitment) => {
+      if (c.source && bugMemoryIds.has(c.source)) {
+        bugCommitmentIds.add(c.id);
+      }
+    });
+
+    return bugCommitmentIds;
+  }, [operations, commitments]);
+
   return {
     columns,
     counts,
     operationStats,
+    bugReportCommitmentIds,
     isLoading,
     error,
     refetch,
