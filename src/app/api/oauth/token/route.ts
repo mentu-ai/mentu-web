@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         p_client_id: client_id,
         p_client_secret: client_secret,
         p_redirect_uri: redirect_uri,
-      });
+      } as never);
 
       if (error) {
         console.error('Token exchange error:', error);
