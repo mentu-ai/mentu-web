@@ -52,9 +52,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const redirectUris = Array.isArray(app.redirect_uris)
-    ? app.redirect_uris
-    : [app.redirect_uris];
+  const appData = app as { redirect_uris: string[] | string };
+  const redirectUris = Array.isArray(appData.redirect_uris)
+    ? appData.redirect_uris
+    : [appData.redirect_uris];
 
   if (!redirectUris.includes(redirectUri)) {
     return NextResponse.json(
