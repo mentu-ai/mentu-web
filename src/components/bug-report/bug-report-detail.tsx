@@ -1,13 +1,14 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Bug, Check, X } from "lucide-react";
+import { Bug, Check, X, Terminal, MousePointer, Globe, Monitor, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { WorkflowProgressExpanded } from "./workflow-progress";
-import type { BugReport } from "@/hooks/useBugReports";
+import { cn } from "@/lib/utils";
+import type { BugReport, ConsoleLog } from "@/hooks/useBugReports";
 import type { WorkflowInstance } from "@/hooks/useWorkflowInstance";
 
 interface BugReportDetailProps {
@@ -15,6 +16,32 @@ interface BugReportDetailProps {
   workflowInstance?: WorkflowInstance | null;
   onApprove?: () => void;
   onReject?: () => void;
+}
+
+function ConsoleLogItem({ log }: { log: ConsoleLog }) {
+  const levelConfig = {
+    error: { icon: AlertCircle, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
+    warn: { icon: AlertTriangle, color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-950/30" },
+    log: { icon: Terminal, color: "text-zinc-500", bg: "bg-zinc-50 dark:bg-zinc-900" },
+    info: { icon: Info, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+    debug: { icon: Terminal, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
+  };
+
+  const config = levelConfig[log.level] || levelConfig.log;
+  const Icon = config.icon;
+
+  return (
+    <div className={cn("flex items-start gap-2 p-2 rounded text-xs font-mono", config.bg)}>
+      <Icon className={cn("h-3.5 w-3.5 mt-0.5 flex-shrink-0", config.color)} />
+      <div className="flex-1 min-w-0">
+        <span className={cn("font-medium", config.color)}>[{log.level.toUpperCase()}]</span>
+        <span className="ml-2 text-zinc-700 dark:text-zinc-300 break-all">{log.message}</span>
+        {log.source && (
+          <span className="ml-2 text-zinc-400">({log.source})</span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function BugReportDetail({
@@ -104,6 +131,169 @@ export function BugReportDetail({
           </div>
         </CardContent>
       </Card>
+
+      {/* Environment */}
+      {bug.environment && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Environment
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+              {bug.environment.page_url && (
+                <div>
+                  <span className="text-muted-foreground">Page:</span>
+                  <div className="font-mono text-xs truncate">{bug.environment.page_url}</div>
+                </div>
+              )}
+              {bug.environment.browser && (
+                <div>
+                  <span className="text-muted-foreground">Browser:</span>
+                  <div>{bug.environment.browser} {bug.environment.browser_version}</div>
+                </div>
+              )}
+              {bug.environment.os && (
+                <div>
+                  <span className="text-muted-foreground">OS:</span>
+                  <div>{bug.environment.os} {bug.environment.os_version}</div>
+                </div>
+              )}
+              {bug.environment.viewport && (
+                <div>
+                  <span className="text-muted-foreground">Viewport:</span>
+                  <div>{bug.environment.viewport}</div>
+                </div>
+              )}
+              {bug.environment.screen_resolution && (
+                <div>
+                  <span className="text-muted-foreground">Screen:</span>
+                  <div>{bug.environment.screen_resolution}</div>
+                </div>
+              )}
+              {bug.environment.timezone && (
+                <div>
+                  <span className="text-muted-foreground">Timezone:</span>
+                  <div>{bug.environment.timezone}</div>
+                </div>
+              )}
+            </div>
+            {bug.environment.user_agent && (
+              <div className="mt-3 pt-3 border-t">
+                <span className="text-muted-foreground text-sm">User Agent:</span>
+                <div className="font-mono text-xs text-muted-foreground break-all mt-1">
+                  {bug.environment.user_agent}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Console Logs */}
+      {bug.console_logs && bug.console_logs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Terminal className="h-4 w-4" />
+              Console Logs
+              <Badge variant="secondary" className="ml-2">
+                {bug.console_logs.length}
+              </Badge>
+              {bug.console_logs.filter(l => l.level === 'error').length > 0 && (
+                <Badge variant="destructive" className="ml-1">
+                  {bug.console_logs.filter(l => l.level === 'error').length} errors
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1 max-h-80 overflow-y-auto">
+              {bug.console_logs.map((log, idx) => (
+                <ConsoleLogItem key={idx} log={log} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Behavior Trace */}
+      {bug.behavior_trace && bug.behavior_trace.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <MousePointer className="h-4 w-4" />
+              Behavior Trace
+              <Badge variant="secondary" className="ml-2">
+                {bug.behavior_trace.length} events
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1 max-h-60 overflow-y-auto">
+              {bug.behavior_trace.map((event, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-xs p-2 bg-muted rounded">
+                  <Badge variant="outline" className="text-[10px]">{event.type}</Badge>
+                  {event.target && (
+                    <span className="font-mono text-muted-foreground truncate">{event.target}</span>
+                  )}
+                  <span className="text-muted-foreground ml-auto">
+                    {new Date(event.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Selected Element */}
+      {bug.selected_element && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Monitor className="h-4 w-4" />
+              Selected Element
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {bug.selected_element.tagName && (
+                <div>
+                  <span className="text-muted-foreground">Tag:</span>
+                  <code className="ml-2 bg-muted px-1.5 py-0.5 rounded">{bug.selected_element.tagName}</code>
+                </div>
+              )}
+              {bug.selected_element.id && (
+                <div>
+                  <span className="text-muted-foreground">ID:</span>
+                  <code className="ml-2 bg-muted px-1.5 py-0.5 rounded">#{bug.selected_element.id}</code>
+                </div>
+              )}
+              {bug.selected_element.className && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Class:</span>
+                  <code className="ml-2 bg-muted px-1.5 py-0.5 rounded text-xs">{bug.selected_element.className}</code>
+                </div>
+              )}
+              {bug.selected_element.selector && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Selector:</span>
+                  <code className="ml-2 bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{bug.selected_element.selector}</code>
+                </div>
+              )}
+              {bug.selected_element.text && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Text:</span>
+                  <div className="mt-1 text-sm bg-muted p-2 rounded">{bug.selected_element.text}</div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Workflow Progress */}
       {workflowInstance && (

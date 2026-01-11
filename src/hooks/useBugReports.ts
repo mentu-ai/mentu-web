@@ -7,6 +7,41 @@ import type { OperationRow, CapturePayload } from "@/lib/mentu/types";
 export type BugSeverity = "critical" | "high" | "medium" | "low";
 export type BugStatus = "inbox" | "in_progress" | "review" | "resolved" | "failed";
 
+export interface ConsoleLog {
+  level: 'log' | 'warn' | 'error' | 'info' | 'debug';
+  message: string;
+  timestamp: number;
+  source?: string;
+}
+
+export interface BehaviorEvent {
+  type: string;
+  target?: string;
+  timestamp: number;
+  data?: Record<string, unknown>;
+}
+
+export interface SelectedElement {
+  tagName?: string;
+  id?: string;
+  className?: string;
+  text?: string;
+  selector?: string;
+}
+
+export interface BugEnvironment {
+  page_url?: string;
+  browser?: string;
+  browser_version?: string;
+  os?: string;
+  os_version?: string;
+  viewport?: string;
+  screen_resolution?: string;
+  timezone?: string;
+  language?: string;
+  user_agent?: string;
+}
+
 export interface BugReport {
   id: string;
   title: string;
@@ -20,6 +55,16 @@ export interface BugReport {
   workflow_state?: string;
   current_step?: string;
   status: BugStatus;
+  // Rich diagnostic data
+  screenshot?: string;
+  console_logs?: ConsoleLog[];
+  behavior_trace?: BehaviorEvent[];
+  selected_element?: SelectedElement;
+  environment?: BugEnvironment;
+  session_id?: string;
+  user_id?: string;
+  has_screenshot?: boolean;
+  has_video?: boolean;
 }
 
 function extractTitle(body: string): string {
@@ -101,6 +146,28 @@ export function useBugReports(workspaceId: string) {
         undefined  // current_step - would need workflow_instances table query
       );
 
+      // Extract diagnostic data from payload
+      const diagnosticData = (payload as unknown as Record<string, unknown>).diagnostic_data as {
+        console_logs?: ConsoleLog[];
+        behavior_trace?: BehaviorEvent[];
+        selected_element?: SelectedElement;
+      } | undefined;
+
+      // Extract environment from meta
+      const meta = payload.meta as Record<string, unknown> | undefined;
+      const environment: BugEnvironment | undefined = meta ? {
+        page_url: meta.page_url as string,
+        browser: meta.browser as string,
+        browser_version: meta.browser_version as string,
+        os: meta.os as string,
+        os_version: meta.os_version as string,
+        viewport: meta.viewport as string,
+        screen_resolution: meta.screen_resolution as string,
+        timezone: meta.timezone as string,
+        language: meta.language as string,
+        user_agent: meta.user_agent as string,
+      } : undefined;
+
       return {
         id: mem.id,
         title: (payload.meta?.title as string) || extractTitle(payload.body || ""),
@@ -110,7 +177,16 @@ export function useBugReports(workspaceId: string) {
         created_at: mem.ts,
         commitment_id: commitment?.id,
         commitment_state: commitmentState,
-        status
+        status,
+        // Rich diagnostic data
+        console_logs: diagnosticData?.console_logs,
+        behavior_trace: diagnosticData?.behavior_trace,
+        selected_element: diagnosticData?.selected_element,
+        environment,
+        session_id: meta?.session_id as string,
+        user_id: meta?.user_id as string,
+        has_screenshot: meta?.has_screenshot as boolean,
+        has_video: meta?.has_video as boolean,
       } as BugReport;
     });
   }, [operations]);
