@@ -18,15 +18,16 @@ export function ScreenshotViewer({ screenshot_url, alt = "Bug screenshot" }: Scr
       {/* Thumbnail */}
       <button
         onClick={() => setIsOpen(true)}
-        className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+        className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary transition-colors block w-full"
       >
-        <div className="relative w-full aspect-video bg-muted">
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
           <Image
             src={screenshot_url}
             alt={alt}
             fill
             className="object-contain"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ position: 'absolute', top: 0, left: 0 }}
           />
         </div>
         {/* Overlay on hover */}
