@@ -29,7 +29,6 @@ export default async function MemoriesPage({ params }: MemoriesPageProps) {
     <MemoriesListPage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

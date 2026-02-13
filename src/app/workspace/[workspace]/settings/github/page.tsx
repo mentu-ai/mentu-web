@@ -27,9 +27,6 @@ export default async function GitHubSettings({ params }: GitHubSettingsPageProps
 
   return (
     <GitHubSettingsPage
-      workspaceName={workspace}
-      workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

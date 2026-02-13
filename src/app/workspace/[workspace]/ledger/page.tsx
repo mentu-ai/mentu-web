@@ -29,7 +29,6 @@ export default async function Ledger({ params }: LedgerPageProps) {
     <LedgerPage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

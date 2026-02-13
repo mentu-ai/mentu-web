@@ -29,7 +29,6 @@ export default async function Bridge({ params }: BridgePageProps) {
     <BridgePage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

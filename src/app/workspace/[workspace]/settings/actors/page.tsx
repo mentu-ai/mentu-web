@@ -27,9 +27,7 @@ export default async function ActorMappings({ params }: ActorMappingsPageProps) 
 
   return (
     <ActorMappingsPage
-      workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

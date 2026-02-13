@@ -27,9 +27,7 @@ export default async function WebhookLogs({ params }: WebhookLogsPageProps) {
 
   return (
     <WebhookLogsPage
-      workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }

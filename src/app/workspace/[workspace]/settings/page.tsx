@@ -29,7 +29,6 @@ export default async function Settings({ params }: SettingsPageProps) {
     <SettingsPage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
-      user={user}
     />
   );
 }
