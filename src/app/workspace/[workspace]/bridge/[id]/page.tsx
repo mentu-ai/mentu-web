@@ -30,7 +30,6 @@ export default async function BridgeCommandPage({ params }: BridgeCommandPagePro
       workspaceName={workspace}
       workspaceId={workspaceData.id}
       commandId={id}
-      user={user}
     />
   );
 }
