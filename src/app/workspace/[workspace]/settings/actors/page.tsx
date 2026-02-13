@@ -9,16 +9,27 @@ interface ActorMappingsPageProps {
 export default async function ActorMappings({ params }: ActorMappingsPageProps) {
   const { workspace } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
 
   const { data: workspaceData } = await supabase
     .from('workspaces')
-    .select('id')
+    .select('*')
     .eq('name', workspace)
-    .single() as { data: { id: string } | null };
+    .single() as { data: { id: string; name: string } | null };
 
   if (!workspaceData) {
     redirect('/');
   }
 
-  return <ActorMappingsPage workspaceId={workspaceData.id} />;
+  return (
+    <ActorMappingsPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+      user={user}
+    />
+  );
 }

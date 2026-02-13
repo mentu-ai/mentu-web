@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { WorkflowProgressExpanded } from "./workflow-progress";
 import { ScreenshotViewer } from "./screenshot-viewer";
+import { BugExecutionPanel } from "./BugExecutionPanel";
 import { cn } from "@/lib/utils";
 import type { BugReport, ConsoleLog } from "@/hooks/useBugReports";
 import type { WorkflowInstance } from "@/hooks/useWorkflowInstance";
 
 interface BugReportDetailProps {
   bug: BugReport;
+  workspaceId?: string;
   workflowInstance?: WorkflowInstance | null;
   onApprove?: () => void;
   onReject?: () => void;
@@ -47,6 +49,7 @@ function ConsoleLogItem({ log }: { log: ConsoleLog }) {
 
 export function BugReportDetail({
   bug,
+  workspaceId,
   workflowInstance,
   onApprove,
   onReject
@@ -355,6 +358,15 @@ export function BugReportDetail({
               ))}
           </CardContent>
         </Card>
+      )}
+
+      {/* Execution Panel - for human_in_loop mode */}
+      {workspaceId && (
+        <BugExecutionPanel
+          ticketId={bug.id}
+          workspaceId={workspaceId}
+          className="mt-6"
+        />
       )}
 
       {/* Links */}

@@ -126,7 +126,6 @@ export function useAgentChat() {
   const connect = useCallback(() => {
     // Don't connect if no URL configured
     if (!AGENT_WS_URL) {
-      console.log('Agent WebSocket URL not configured');
       setStatus('disconnected');
       return;
     }
@@ -136,7 +135,6 @@ export function useAgentChat() {
 
     // Stop after max attempts
     if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
-      console.log('Max reconnect attempts reached');
       setStatus('error');
       return;
     }

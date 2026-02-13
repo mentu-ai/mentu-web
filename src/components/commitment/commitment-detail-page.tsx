@@ -13,6 +13,9 @@ import { ClaimDialog } from './claim-dialog';
 import { ReleaseDialog } from './release-dialog';
 import { CloseWithEvidenceDialog } from './close-with-evidence-dialog';
 import { AnnotateDialog } from './annotate-dialog';
+import { ApproveDialog } from './approve-dialog';
+import { SubmitDialog } from './submit-dialog';
+import { ReopenDialog } from './reopen-dialog';
 import { CommitmentTimeline } from './commitment-timeline';
 import { DiffViewer } from '@/components/diff/DiffViewer';
 import { relativeTime, absoluteTime, getActor } from '@/lib/utils';
@@ -36,6 +39,9 @@ export function CommitmentDetailPage({
   const [releaseOpen, setReleaseOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
+  const [reopenOpen, setReopenOpen] = useState(false);
 
   const { commitment, operations, isLoading } = useCommitment(workspaceId, commitmentId);
   useRealtimeOperations(workspaceId);
@@ -45,6 +51,9 @@ export function CommitmentDetailPage({
   const canClaim = commitment?.state === 'open';
   const canRelease = commitment?.state === 'claimed' && isOwner;
   const canClose = commitment?.state === 'claimed' && isOwner;
+  const canSubmit = commitment?.state === 'claimed' && isOwner;
+  const canApprove = commitment?.state === 'in_review';
+  const canReopen = commitment?.state === 'in_review' || commitment?.state === 'closed';
 
   const timeline = operations ? getCommitmentTimeline(operations, commitmentId) : [];
   const externalRefs = operations ? getExternalRefs(operations, commitmentId) : [];
@@ -192,9 +201,24 @@ export function CommitmentDetailPage({
             Release
           </Button>
         )}
+        {canSubmit && (
+          <Button onClick={() => setSubmitOpen(true)}>
+            Submit for Review
+          </Button>
+        )}
         {canClose && (
           <Button onClick={() => setCloseOpen(true)}>
             Close with Evidence
+          </Button>
+        )}
+        {canApprove && (
+          <Button onClick={() => setApproveOpen(true)}>
+            Approve
+          </Button>
+        )}
+        {canReopen && (
+          <Button variant="outline" onClick={() => setReopenOpen(true)}>
+            Reopen
           </Button>
         )}
         <Button variant="outline" onClick={() => setAnnotateOpen(true)}>
@@ -263,6 +287,30 @@ export function CommitmentDetailPage({
         targetId={commitmentId}
         user={user}
       />
+      <ApproveDialog
+        open={approveOpen}
+        onOpenChange={setApproveOpen}
+        workspaceId={workspaceId}
+        commitmentId={commitmentId}
+        user={user}
+      />
+      <SubmitDialog
+        open={submitOpen}
+        onOpenChange={setSubmitOpen}
+        workspaceId={workspaceId}
+        commitmentId={commitmentId}
+        user={user}
+      />
+      {commitment && (
+        <ReopenDialog
+          open={reopenOpen}
+          onOpenChange={setReopenOpen}
+          workspaceId={workspaceId}
+          commitmentId={commitmentId}
+          currentState={commitment.state}
+          user={user}
+        />
+      )}
     </div>
   );
 }

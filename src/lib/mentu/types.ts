@@ -1,7 +1,7 @@
 // Mentu Protocol Types for Web Interface
 // Mirrors the CLI types
 
-export type OperationType = 'capture' | 'commit' | 'claim' | 'release' | 'close' | 'annotate' | 'submit' | 'approve' | 'reopen' | 'publish';
+export type OperationType = 'capture' | 'commit' | 'claim' | 'release' | 'close' | 'annotate' | 'submit' | 'approve' | 'reopen' | 'publish' | 'dismiss' | 'triage' | 'link' | 'cancel';
 
 export type CommitmentState = 'open' | 'claimed' | 'in_review' | 'closed' | 'reopened' | 'cancelled';
 
@@ -58,6 +58,39 @@ export interface AnnotatePayload {
   meta?: Record<string, unknown>;
 }
 
+export type LinkKind = 'related' | 'duplicate' | 'caused_by' | 'blocks' | 'evidence';
+
+export interface LinkPayload {
+  source: string;
+  target: string;
+  kind?: LinkKind;
+  reason?: string;
+}
+
+export interface DismissPayload {
+  memory: string;
+  reason: string;
+  tags?: string[];
+}
+
+export interface TriageDecision {
+  memory: string;
+  action: 'create' | 'link' | 'dismiss' | 'defer';
+  target?: string;
+  reason?: string;
+}
+
+export interface TriagePayload {
+  reviewed: string[];
+  summary: string;
+  decisions: TriageDecision[];
+}
+
+export interface CancelPayload {
+  commitment: string;
+  reason: string;
+}
+
 export type Payload =
   | CapturePayload
   | CommitPayload
@@ -67,7 +100,11 @@ export type Payload =
   | SubmitPayload
   | ApprovePayload
   | ReopenPayload
-  | AnnotatePayload;
+  | AnnotatePayload
+  | LinkPayload
+  | DismissPayload
+  | TriagePayload
+  | CancelPayload;
 
 // Database operation row
 export interface OperationRow {

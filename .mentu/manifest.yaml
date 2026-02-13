@@ -1,0 +1,42 @@
+name: mentu-web
+description: Next.js dashboard - visualization layer for Mentu ecosystem
+version: "1.1.0"
+
+requires:
+  - node >= 18
+  - npm
+
+# Canonical documentation lives in claude-code registry
+registry:
+  source: claude-code/registry/modules/web-dashboard.yaml
+  version: "1.0.0"
+
+# Summary of routes/views (full docs in registry)
+route_summary:
+  dashboard: /workspace/[id]
+  commitments: /workspace/[id]/commitments
+  memories: /workspace/[id]/memories
+  ledger: /workspace/[id]/ledger
+  bridge: /workspace/[id]/bridge
+  settings: /workspace/[id]/settings/*
+
+# Build operations (local to this repo)
+build:
+  - name: dev
+    command: npm run dev
+  - name: build
+    command: npm run build
+  - name: start
+    command: npm run start
+  - name: deploy
+    command: vercel deploy
+
+dependencies:
+  - name: mentu-ai
+    relationship: api-client
+  - name: mentu-proxy
+    relationship: gateway-consumer
+
+mentu:
+  actor: user:dashboard
+  auto_capture: false

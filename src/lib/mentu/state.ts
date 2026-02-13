@@ -48,12 +48,10 @@ export function computeCommitmentState(
       owner = null;
       evidence = (op.payload as { evidence: string }).evidence;
       closed_by = op.actor;
+    } else if (op.op === 'cancel' && (op.payload as { commitment: string }).commitment === cmtId) {
+      state = 'cancelled';
+      owner = null;
     }
-  }
-
-  // Debug log for in_review state
-  if (state === 'in_review') {
-    console.log('[computeCommitmentState] Found in_review commitment:', cmtId);
   }
 
   return { state, owner, evidence, closed_by };
@@ -113,14 +111,11 @@ export function computeMemories(ops: OperationRow[]): Memory[] {
  */
 export function computeCommitments(ops: OperationRow[]): Commitment[] {
   const commitments: Commitment[] = [];
-  const stateBreakdown: Record<string, number> = {};
 
   for (const op of ops) {
     if (op.op === 'commit') {
       const payload = op.payload as CommitPayload;
       const { state, owner, evidence, closed_by } = computeCommitmentState(ops, op.id);
-
-      stateBreakdown[state] = (stateBreakdown[state] || 0) + 1;
 
       commitments.push({
         id: op.id,
@@ -137,14 +132,6 @@ export function computeCommitments(ops: OperationRow[]): Commitment[] {
         annotations: getAnnotations(ops, op.id),
       });
     }
-  }
-
-  console.log('[computeCommitments] Total:', commitments.length, '| States:', stateBreakdown);
-
-  // Log in_review specifically
-  const inReviewCommitments = commitments.filter(c => c.state === 'in_review');
-  if (inReviewCommitments.length > 0) {
-    console.log('[computeCommitments] IN_REVIEW commitments:', inReviewCommitments.map(c => c.id));
   }
 
   return commitments;

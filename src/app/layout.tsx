@@ -15,8 +15,22 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Mentu - The Commitment Ledger',
-  description: 'Track commitments with proof. Observations to Commitments to Evidence to Closure.',
+  title: 'Mentu — The Commitment Ledger',
+  description: 'Track commitments with proof. From observations to evidence to closure. An append-only ledger for AI-native development.',
+  openGraph: {
+    title: 'Mentu — The Commitment Ledger',
+    description: 'Track commitments with proof. From observations to evidence to closure.',
+    type: 'website',
+    siteName: 'Mentu',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Mentu — The Commitment Ledger',
+    description: 'Track commitments with proof.',
+  },
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

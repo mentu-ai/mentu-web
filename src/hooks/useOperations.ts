@@ -14,8 +14,6 @@ async function fetchAllOperations(supabase: ReturnType<typeof createClient>, wor
   let offset = 0;
   let hasMore = true;
 
-  console.log('[useOperations] Starting paginated fetch for workspace:', workspaceId);
-
   while (hasMore) {
     const { data, error } = await supabase
       .from('operations')
@@ -31,7 +29,6 @@ async function fetchAllOperations(supabase: ReturnType<typeof createClient>, wor
 
     if (data && data.length > 0) {
       allOperations.push(...(data as unknown as OperationRow[]));
-      console.log('[useOperations] Fetched page:', offset, '-', offset + data.length - 1, '| Total so far:', allOperations.length);
       offset += PAGE_SIZE;
       hasMore = data.length === PAGE_SIZE; // If we got less than PAGE_SIZE, we're done
     } else {
@@ -39,7 +36,6 @@ async function fetchAllOperations(supabase: ReturnType<typeof createClient>, wor
     }
   }
 
-  console.log('[useOperations] Pagination complete. Total operations:', allOperations.length);
   return allOperations;
 }
 
@@ -53,19 +49,6 @@ export function useOperations(workspaceId: string | undefined) {
 
       // Use pagination to fetch ALL operations
       const data = await fetchAllOperations(supabase, workspaceId);
-
-      // Log operation breakdown
-      const opCounts: Record<string, number> = {};
-      data.forEach((op: OperationRow) => {
-        opCounts[op.op] = (opCounts[op.op] || 0) + 1;
-      });
-      console.log('[useOperations] Operation breakdown:', opCounts);
-
-      // Log submit operations for debugging
-      const submitOps = data.filter((op: OperationRow) => op.op === 'submit');
-      if (submitOps.length > 0) {
-        console.log('[useOperations] Submit operations found:', submitOps.length);
-      }
 
       return data;
     },

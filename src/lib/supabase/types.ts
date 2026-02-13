@@ -301,6 +301,70 @@ export interface Database {
           received_at?: string;
         };
       };
+      spawn_logs: {
+        Row: {
+          id: string;
+          command_id: string;
+          workspace_id: string;
+          stream: 'stdout' | 'stderr';
+          message: string;
+          ts: string;
+        };
+        Insert: {
+          id?: string;
+          command_id: string;
+          workspace_id: string;
+          stream: 'stdout' | 'stderr';
+          message: string;
+          ts?: string;
+        };
+        Update: {
+          id?: string;
+          command_id?: string;
+          workspace_id?: string;
+          stream?: 'stdout' | 'stderr';
+          message?: string;
+          ts?: string;
+        };
+      };
+      tickets: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          source: string;
+          title: string | null;
+          description: string | null;
+          screenshot: string | null;
+          console_logs: Json | null;
+          environment: Json | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          source: string;
+          title?: string | null;
+          description?: string | null;
+          screenshot?: string | null;
+          console_logs?: Json | null;
+          environment?: Json | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          source?: string;
+          title?: string | null;
+          description?: string | null;
+          screenshot?: string | null;
+          console_logs?: Json | null;
+          environment?: Json | null;
+          status?: string;
+          created_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

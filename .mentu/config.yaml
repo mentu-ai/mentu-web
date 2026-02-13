@@ -1,0 +1,22 @@
+# Configuration for mentu-web repository
+# Environment-specific settings - NO SECRETS
+
+api:
+  # Reference environment variables, do not hardcode
+  proxy_url: ${MENTU_API_URL}
+  workspace_id: ${MENTU_WORKSPACE_ID}
+
+actor:
+  default: user:dashboard
+
+cloud:
+  enabled: true
+  endpoint: ${MENTU_API_URL}
+  workspace_id: ${MENTU_WORKSPACE_ID}
+
+integrations:
+  # Dashboard is read-only, consumes data only
+  github:
+    enabled: false
+  notion:
+    enabled: false

@@ -71,11 +71,9 @@ export function DeployedView({ workspace, onBack }: DeployedViewProps) {
         break;
       case 'spawn':
         // TODO: Open spawn agent dialog
-        console.log('Opening agent spawn dialog...');
         break;
       case 'work':
         // TODO: Open new commitment form
-        console.log('Creating new commitment...');
         break;
     }
   };

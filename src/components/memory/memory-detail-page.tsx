@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AnnotateDialog } from '@/components/commitment/annotate-dialog';
 import { CreateCommitmentDialog } from '@/components/commitment/create-commitment-dialog';
+import { DismissDialog } from '@/components/memory/dismiss-dialog';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Target, CheckCircle } from 'lucide-react';
@@ -30,6 +31,7 @@ export function MemoryDetailPage({
 }: MemoryDetailPageProps) {
   const [annotateOpen, setAnnotateOpen] = useState(false);
   const [commitOpen, setCommitOpen] = useState(false);
+  const [dismissOpen, setDismissOpen] = useState(false);
 
   const { memory, isLoading } = useMemory(workspaceId, memoryId);
   const { data: operations } = useOperations(workspaceId);
@@ -147,6 +149,9 @@ export function MemoryDetailPage({
         <Button variant="outline" onClick={() => setAnnotateOpen(true)}>
           Annotate
         </Button>
+        <Button variant="destructive" onClick={() => setDismissOpen(true)}>
+          Dismiss
+        </Button>
       </div>
 
       {/* Commitments using this as source */}
@@ -248,6 +253,13 @@ export function MemoryDetailPage({
         workspaceId={workspaceId}
         user={user}
         defaultSourceId={memoryId}
+      />
+      <DismissDialog
+        open={dismissOpen}
+        onOpenChange={setDismissOpen}
+        workspaceId={workspaceId}
+        memoryId={memoryId}
+        user={user}
       />
     </div>
   );

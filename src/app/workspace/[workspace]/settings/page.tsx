@@ -9,12 +9,17 @@ interface SettingsPageProps {
 export default async function Settings({ params }: SettingsPageProps) {
   const { workspace } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
 
   const { data: workspaceData } = await supabase
     .from('workspaces')
-    .select('id')
+    .select('*')
     .eq('name', workspace)
-    .single() as { data: { id: string } | null };
+    .single() as { data: { id: string; name: string } | null };
 
   if (!workspaceData) {
     redirect('/');
@@ -24,6 +29,7 @@ export default async function Settings({ params }: SettingsPageProps) {
     <SettingsPage
       workspaceName={workspace}
       workspaceId={workspaceData.id}
+      user={user}
     />
   );
 }

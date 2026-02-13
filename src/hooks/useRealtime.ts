@@ -27,20 +27,11 @@ export function useRealtimeOperations(workspaceId: string | undefined) {
           const newOp = payload.new as OperationRow;
 
           // Add to local cache - must match useOperations query key
-          console.log('[Realtime] New operation received:', newOp.op, newOp.id);
           queryClient.setQueryData<OperationRow[]>(
             ['operations', workspaceId, 'v2'],
             (old) => {
-              if (!old) {
-                console.log('[Realtime] No existing cache, creating new');
-                return [newOp];
-              }
-              // Check if already exists
-              if (old.some((op) => op.id === newOp.id)) {
-                console.log('[Realtime] Operation already in cache, skipping');
-                return old;
-              }
-              console.log('[Realtime] Adding operation to cache, new total:', old.length + 1);
+              if (!old) return [newOp];
+              if (old.some((op) => op.id === newOp.id)) return old;
               return [...old, newOp];
             }
           );

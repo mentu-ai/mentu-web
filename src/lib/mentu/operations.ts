@@ -9,6 +9,10 @@ import type {
   ReleasePayload,
   ClosePayload,
   AnnotatePayload,
+  SubmitPayload,
+  ApprovePayload,
+  ReopenPayload,
+  DismissPayload,
   OperationRow,
 } from './types';
 
@@ -16,7 +20,7 @@ interface CreateOperationParams {
   workspaceId: string;
   op: OperationType;
   actor: string;
-  payload: CapturePayload | CommitPayload | ClaimPayload | ReleasePayload | ClosePayload | AnnotatePayload;
+  payload: CapturePayload | CommitPayload | ClaimPayload | ReleasePayload | ClosePayload | AnnotatePayload | SubmitPayload | ApprovePayload | ReopenPayload | DismissPayload;
 }
 
 export async function createOperation({
@@ -197,6 +201,79 @@ export async function annotateRecord(
       kind: options?.kind,
       refs: options?.refs,
       meta: options?.meta,
+    },
+  });
+}
+
+export async function submitCommitment(
+  workspaceId: string,
+  actor: string,
+  commitmentId: string,
+  options?: { evidence?: string[]; summary?: string }
+): Promise<OperationRow> {
+  return createOperation({
+    workspaceId,
+    op: 'submit',
+    actor,
+    payload: {
+      commitment: commitmentId,
+      evidence: options?.evidence,
+      summary: options?.summary,
+    },
+  });
+}
+
+export async function approveCommitment(
+  workspaceId: string,
+  actor: string,
+  commitmentId: string,
+  comment?: string
+): Promise<OperationRow> {
+  return createOperation({
+    workspaceId,
+    op: 'approve',
+    actor,
+    payload: {
+      commitment: commitmentId,
+      comment,
+    },
+  });
+}
+
+export async function reopenCommitment(
+  workspaceId: string,
+  actor: string,
+  commitmentId: string,
+  reason: string,
+  fromState: string
+): Promise<OperationRow> {
+  return createOperation({
+    workspaceId,
+    op: 'reopen',
+    actor,
+    payload: {
+      commitment: commitmentId,
+      reason,
+      from_state: fromState,
+    } as ReopenPayload & { from_state: string },
+  });
+}
+
+export async function dismissMemory(
+  workspaceId: string,
+  actor: string,
+  memoryId: string,
+  reason: string,
+  tags?: string[]
+): Promise<OperationRow> {
+  return createOperation({
+    workspaceId,
+    op: 'dismiss',
+    actor,
+    payload: {
+      memory: memoryId,
+      reason,
+      tags,
     },
   });
 }

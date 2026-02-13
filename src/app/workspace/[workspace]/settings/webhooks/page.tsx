@@ -9,16 +9,27 @@ interface WebhookLogsPageProps {
 export default async function WebhookLogs({ params }: WebhookLogsPageProps) {
   const { workspace } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
 
   const { data: workspaceData } = await supabase
     .from('workspaces')
-    .select('id')
+    .select('*')
     .eq('name', workspace)
-    .single() as { data: { id: string } | null };
+    .single() as { data: { id: string; name: string } | null };
 
   if (!workspaceData) {
     redirect('/');
   }
 
-  return <WebhookLogsPage workspaceId={workspaceData.id} />;
+  return (
+    <WebhookLogsPage
+      workspaceName={workspace}
+      workspaceId={workspaceData.id}
+      user={user}
+    />
+  );
 }

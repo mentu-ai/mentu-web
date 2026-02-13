@@ -271,7 +271,5 @@ async function deleteConnection(id: string): Promise<void> {
 }
 
 async function triggerSync(connectionId: string): Promise<void> {
-  // In production, this would call a sync endpoint
-  console.log('Triggering sync for connection:', connectionId);
   // Placeholder - actual sync implementation in mentu-proxy
 }

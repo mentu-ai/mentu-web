@@ -8,7 +8,7 @@ import type { BridgeResult } from '@/lib/mentu/types';
 export interface LogEntry {
   id: string;
   timestamp: string;
-  type: 'system' | 'agent' | 'tool' | 'todo' | 'error';
+  type: 'system' | 'agent' | 'tool' | 'todo' | 'error' | 'task' | 'file';
   content: string;
   metadata?: Record<string, unknown>;
 }
@@ -37,6 +37,10 @@ function parseOutput(output: string | null): LogEntry[] {
       type = 'tool';
     } else if (line.includes('TODO') || line.includes('[ ]') || line.includes('[x]') || line.includes('[X]')) {
       type = 'todo';
+    } else if (line.includes('[TASK]') || line.includes('Task:') || line.match(/^(Running|Executing|Starting task)/i)) {
+      type = 'task';
+    } else if (line.match(/\.(ts|tsx|js|jsx|json|md|css|html|py)[\s:$]/) || line.includes('File:') || line.match(/^(Reading|Writing|Editing|Created|Modified)/i)) {
+      type = 'file';
     }
 
     entries.push({

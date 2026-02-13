@@ -14,7 +14,6 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const searchParams = useSearchParams();
   const returnTo = searchParams.get('return_to');
 
@@ -25,31 +24,19 @@ function LoginForm() {
     const errorParam = searchParams.get('error');
     if (errorParam) {
       setError(decodeURIComponent(errorParam));
-      addDebug(`Error from callback: ${errorParam}`);
     }
   }, [searchParams]);
 
   // Check current session on mount
   useEffect(() => {
     const checkSession = async () => {
-      addDebug('Checking current session...');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        addDebug(`Session check error: ${error.message}`);
-      } else if (session) {
-        addDebug(`Active session found for: ${session.user.email}`);
-        addDebug(`Session expires: ${new Date(session.expires_at! * 1000).toISOString()}`);
-      } else {
-        addDebug('No active session');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = returnTo || '/';
       }
     };
     checkSession();
-  }, [supabase.auth]);
-
-  const addDebug = (msg: string) => {
-    console.log(`[LOGIN] ${msg}`);
-    setDebugInfo(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${msg}`]);
-  };
+  }, [supabase.auth, returnTo]);
 
   const handleGitHubLogin = async () => {
     setIsLoading(true);
@@ -59,9 +46,8 @@ function LoginForm() {
     if (returnTo) {
       redirectTo += `?return_to=${encodeURIComponent(returnTo)}`;
     }
-    addDebug(`Starting GitHub OAuth, redirectTo: ${redirectTo}`);
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
         redirectTo,
@@ -69,11 +55,8 @@ function LoginForm() {
     });
 
     if (error) {
-      addDebug(`OAuth error: ${error.message}`);
       setError(error.message);
       setIsLoading(false);
-    } else {
-      addDebug(`OAuth initiated, redirecting to: ${data.url}`);
     }
   };
 
@@ -91,7 +74,7 @@ function LoginForm() {
       if (error) {
         setError(error.message);
       } else {
-        window.location.href = '/';
+        window.location.href = returnTo || '/';
       }
     } else {
       const { error } = await supabase.auth.signUp({
@@ -190,28 +173,6 @@ function LoginForm() {
                 ? "Don't have an account? Sign up"
                 : 'Already have an account? Sign in'}
             </button>
-          </div>
-        </div>
-
-        {/* Debug Panel */}
-        <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 text-xs font-mono">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-zinc-400">Debug Log</span>
-            <button
-              onClick={() => setDebugInfo([])}
-              className="text-zinc-500 hover:text-zinc-300"
-            >
-              Clear
-            </button>
-          </div>
-          <div className="space-y-1 max-h-32 overflow-auto">
-            {debugInfo.length === 0 ? (
-              <p className="text-zinc-600">No logs yet...</p>
-            ) : (
-              debugInfo.map((log, i) => (
-                <p key={i} className="text-green-400">{log}</p>
-              ))
-            )}
           </div>
         </div>
       </div>

@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "name": "AutonomousBugExecution-v1.0 (mentu-web)",
+  "tier": "T3",
+  "required_files": [
+    "src/hooks/useSpawnLogs.ts",
+    "src/hooks/useBugExecution.ts",
+    "src/components/bug-report/BugExecutionPanel.tsx",
+    "src/components/bug-report/ExecutionOutput.tsx",
+    "src/app/workspace/[workspace]/[plane]/bug-execution/page.tsx",
+    "src/lib/api/bug-execution.ts"
+  ],
+  "checks": {
+    "tsc": true,
+    "build": true,
+    "test": false
+  },
+  "mentu": {
+    "enabled": true,
+    "commitments": {
+      "mode": "dynamic",
+      "min_count": 1,
+      "require_closed": true,
+      "require_evidence": true
+    }
+  },
+  "max_iterations": 100
+}

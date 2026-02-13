@@ -1,13 +1,66 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { CreateWorkspaceDialog } from '@/components/workspace/create-workspace-dialog';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+
+function LandingPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4">
+      <div className="max-w-lg text-center space-y-8">
+        <div className="space-y-3">
+          <h1 className="text-5xl font-bold tracking-tight">Mentu</h1>
+          <p className="text-xl text-zinc-500 dark:text-zinc-400">
+            The Commitment Ledger
+          </p>
+        </div>
+
+        <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          Track commitments with proof. From observations to evidence to closure.
+          An append-only ledger for AI-native development.
+        </p>
+
+        <ul className="text-left space-y-3 text-sm mx-auto max-w-xs">
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0" />
+            <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">Append-only ledger</span>
+              {' '}&mdash; immutable commitment history
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0" />
+            <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">Evidence-bound transitions</span>
+              {' '}&mdash; every state change captured
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0" />
+            <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">Agent + Human interoperable</span>
+              {' '}&mdash; built for AI-native workflows
+            </span>
+          </li>
+        </ul>
+
+        <div>
+          <Link href="/login">
+            <Button size="lg">Get Started</Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    return <LandingPage />;
   }
 
   // Get user's workspaces
@@ -22,11 +75,14 @@ export default async function HomePage() {
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold">Welcome to Mentu</h1>
           <p className="text-zinc-500 dark:text-zinc-400">
-            You don&apos;t have access to any workspaces yet.
+            You don&apos;t have any workspaces yet.
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Contact a workspace owner to get invited, or create a workspace using the CLI.
-          </p>
+          <CreateWorkspaceDialog>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Workspace
+            </Button>
+          </CreateWorkspaceDialog>
         </div>
       </div>
     );
@@ -69,6 +125,15 @@ export default async function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        <div className="text-center">
+          <CreateWorkspaceDialog>
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              New Workspace
+            </Button>
+          </CreateWorkspaceDialog>
         </div>
       </div>
     </div>
