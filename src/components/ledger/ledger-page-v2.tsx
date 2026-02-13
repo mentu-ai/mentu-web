@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { OperationType, OperationRow } from '@/lib/mentu/types';
-import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, Download, Copy, Send, ThumbsUp, RotateCcw, Globe } from 'lucide-react';
+import { Camera, Target, Hand, ArrowRightLeft, CheckCircle, MessageSquare, Download, Copy, Send, ThumbsUp, RotateCcw, Globe, XCircle, Filter, Link2, Ban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface LedgerPageV2Props {
@@ -32,6 +32,10 @@ const opIcons: Record<OperationType, typeof Camera> = {
   approve: ThumbsUp,
   reopen: RotateCcw,
   publish: Globe,
+  dismiss: XCircle,
+  triage: Filter,
+  link: Link2,
+  cancel: Ban,
 };
 
 const opColors: Record<OperationType, string> = {
@@ -45,6 +49,10 @@ const opColors: Record<OperationType, string> = {
   approve: 'text-green-600',
   reopen: 'text-orange-600',
   publish: 'text-cyan-600',
+  dismiss: 'text-red-600',
+  triage: 'text-yellow-600',
+  link: 'text-indigo-600',
+  cancel: 'text-red-600',
 };
 
 export function LedgerPageV2({

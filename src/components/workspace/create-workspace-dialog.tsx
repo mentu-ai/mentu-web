@@ -67,7 +67,8 @@ export function CreateWorkspaceDialog({ children }: CreateWorkspaceDialogProps) 
 
     const workspaceId = crypto.randomUUID();
 
-    const { error: insertError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: insertError } = await (supabase as any)
       .from('workspaces')
       .insert({ id: workspaceId, name: slug, display_name: displayName || slug });
 
@@ -77,7 +78,8 @@ export function CreateWorkspaceDialog({ children }: CreateWorkspaceDialogProps) 
       return;
     }
 
-    const { error: memberError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: memberError } = await (supabase as any)
       .from('workspace_members')
       .insert({ workspace_id: workspaceId, user_id: user.id, role: 'owner' });
 
