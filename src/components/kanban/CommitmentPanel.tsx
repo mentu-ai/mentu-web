@@ -11,11 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CommitmentTimeline } from '@/components/commitment/commitment-timeline';
 import { DiffViewer } from '@/components/diff/DiffViewer';
 import { BridgeLogsViewer } from './BridgeLogsViewer';
-import { SpawnAgentButton } from './actions/SpawnAgentButton';
-import { DevServerButton } from './actions/DevServerButton';
-import { CreatePRButton } from './actions/CreatePRButton';
-import { MergeButton } from './actions/MergeButton';
-import { ApproveButton } from './actions/ApproveButton';
 import { relativeTime, absoluteTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -201,31 +196,9 @@ export function CommitmentPanel({
             )}
           </div>
 
-          {/* Action buttons */}
+          {/* Action buttons removed — action components deleted */}
           <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap gap-2">
-            <SpawnAgentButton
-              commitment={commitment}
-              workspaceId={workspaceId}
-              activeBridgeCommand={activeBridgeCommand}
-            />
-            <DevServerButton
-              commitment={commitment}
-              workspaceId={workspaceId}
-              hasWorktree={hasWorktree}
-            />
-            <CreatePRButton
-              commitment={commitment}
-              workspaceId={workspaceId}
-              hasWorktree={hasWorktree}
-            />
-            <MergeButton
-              commitment={commitment}
-              workspaceId={workspaceId}
-            />
-            <ApproveButton
-              commitment={commitment}
-              workspaceId={workspaceId}
-            />
+            <span className="text-xs text-zinc-400">Actions coming soon</span>
           </div>
 
           {/* Tabs */}
