@@ -270,6 +270,7 @@ async function deleteConnection(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function triggerSync(connectionId: string): Promise<void> {
   // Placeholder - actual sync implementation in mentu-proxy
 }

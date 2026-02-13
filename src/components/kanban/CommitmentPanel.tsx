@@ -269,7 +269,7 @@ export function CommitmentPanel({
                 <DiffViewer
                   commitmentId={commitment.id}
                   pollingInterval={activeTab === 'changes' ? 5000 : false}
-                  onRevertFile={async (_path) => {
+                  onRevertFile={async () => {
                     // TODO: Implement via API
                   }}
                 />
