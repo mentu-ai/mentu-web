@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   Target,
+  GitBranch,
   Brain,
   ScrollText,
   Terminal,
@@ -18,6 +19,7 @@ interface MobileNavProps {
 const navItems = [
   { name: 'Home', href: '', icon: LayoutDashboard },
   { name: 'Commits', href: '/commitments', icon: Target },
+  { name: 'Sequences', href: '/sequences', icon: GitBranch },
   { name: 'Memory', href: '/memories', icon: Brain },
   { name: 'Ledger', href: '/ledger', icon: ScrollText },
   { name: 'Bridge', href: '/bridge', icon: Terminal },

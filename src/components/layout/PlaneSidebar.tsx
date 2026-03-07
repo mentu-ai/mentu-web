@@ -114,7 +114,7 @@ export function PlaneSidebar({ user }: PlaneSidebarProps) {
 
   const handleSelectWorkspace = useCallback((workspaceName: string) => {
     setWorkspaceOpen(false);
-    router.push(`/workspace/${workspaceName}/execution/kanban`);
+    router.push(`/workspace/${workspaceName}/commitments`);
   }, [router]);
 
   const currentWorkspace = useMemo(() =>

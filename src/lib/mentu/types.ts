@@ -319,3 +319,46 @@ export interface WebhookLog {
   error_message: string | null;
   received_at: string;
 }
+
+// Panorama + Sequence types
+export interface WorkspaceRegistryEntry {
+  workspace_id: string;
+  name: string;
+  path?: string;
+  stack?: string;
+  build_cmd?: string;
+  repo_url?: string;
+  last_activity_at?: string;
+  registered_at?: string;
+}
+
+export interface PanoramaWorkspace extends WorkspaceRegistryEntry {
+  stats: {
+    open: number;
+    claimed: number;
+    in_review: number;
+    closed_this_week: number;
+    memories: number;
+  };
+  active_sequences: PanoramaSequence[];
+}
+
+export interface PanoramaSequence {
+  instance_id: string;
+  name: string;
+  state: string;
+  total_steps: number;
+  completed_steps: number;
+  current_step?: string;
+  started_at: string;
+}
+
+export interface WorkflowStepLog {
+  id: string;
+  instance_id: string;
+  workspace_id: string;
+  step_id: string;
+  stream: string;
+  message: string;
+  ts: string;
+}

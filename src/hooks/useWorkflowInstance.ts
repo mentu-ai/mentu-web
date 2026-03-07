@@ -6,11 +6,15 @@ import { createClient } from "@/lib/supabase/client";
 export interface WorkflowStep {
   id: string;
   type: string;
-  state: "pending" | "running" | "completed" | "failed" | "skipped";
+  state: "pending" | "running" | "active" | "completed" | "failed" | "skipped";
   output?: unknown;
   started_at?: string;
   completed_at?: string;
   error?: string;
+  commitment_id?: string;
+  commitment_state?: string;
+  outcome?: string;
+  activated_at?: string;
 }
 
 export interface WorkflowInstance {
@@ -22,6 +26,8 @@ export interface WorkflowInstance {
   current_step: string;
   created_at: string;
   updated_at: string;
+  parent_commitment_id?: string;
+  definition_memory_id?: string;
 }
 
 export function useWorkflowInstance(instanceId: string | undefined) {

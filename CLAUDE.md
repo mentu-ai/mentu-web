@@ -16,11 +16,13 @@ Deployed: Vercel
 
 The dashboard is the **Eyes** of the Mentu organism—a read-only visualization layer that displays:
 
-1. **Commitments** → Task lifecycle from open → claimed → in_review → closed
-2. **Memories** → Captures, observations, and evidence
-3. **Ledger** → Append-only operation history
-4. **Bridge** → Command queue status and machine heartbeats
-5. **Settings** → Actor mappings, GitHub integration, webhooks
+1. **Panorama** → Cross-workspace overview with active sequences and commitment stats
+2. **Commitments** → Task lifecycle from open → claimed → in_review → closed
+3. **Memories** → Captures, observations, and evidence
+4. **Ledger** → Append-only operation history
+5. **Sequences** → Multi-step workflow execution with step timelines and live logs
+6. **Bridge** → Command queue status and machine heartbeats
+7. **Settings** → Actor mappings, GitHub integration, webhooks
 
 ## Architecture
 
@@ -32,7 +34,9 @@ src/
 │   │   ├── memories/             # Memory list & detail
 │   │   ├── ledger/               # Operation log
 │   │   ├── bridge/               # Bridge commands & machines
+│   │   ├── sequences/            # Sequence list & detail
 │   │   └── settings/             # Configuration pages
+│   ├── panorama/                 # Cross-workspace overview
 │   ├── login/                    # Supabase auth
 │   └── auth/callback/            # OAuth callback
 ├── components/
@@ -43,11 +47,17 @@ src/
 │   ├── memory/                   # Memory views & dialogs
 │   ├── bridge/                   # Bridge views
 │   ├── ledger/                   # Ledger view
+│   ├── sequence/                 # Sequence views (timeline, log viewer)
+│   ├── panorama/                 # Panorama components (workspace grid, feed)
 │   └── settings/                 # Settings pages
 ├── hooks/                        # Data fetching hooks
 │   ├── useCommitments.ts
 │   ├── useMemories.ts
 │   ├── useOperations.ts
+│   ├── useWorkflowInstances.ts
+│   ├── useWorkflowInstance.ts
+│   ├── useWorkflowStepLogs.ts
+│   ├── usePanorama.ts
 │   ├── useBridgeCommands.ts
 │   ├── useBridgeMachines.ts
 │   └── useRealtime.ts
@@ -61,7 +71,8 @@ src/
 
 | Route | Component | Purpose |
 |-------|-----------|---------|
-| `/` | redirect | Redirects to workspace |
+| `/` | redirect | Redirects to panorama or workspace |
+| `/panorama` | PanoramaPage | Cross-workspace overview |
 | `/login` | LoginPage | Supabase authentication |
 | `/workspace/[id]` | WorkspaceDashboard | Overview with stats |
 | `/workspace/[id]/commitments` | CommitmentsListPage | Filtered commitment list |
@@ -69,6 +80,8 @@ src/
 | `/workspace/[id]/memories` | MemoriesListPage | Filtered memory list |
 | `/workspace/[id]/memories/[id]` | MemoryDetailPage | Single memory |
 | `/workspace/[id]/ledger` | LedgerPage | Operation history |
+| `/workspace/[id]/sequences` | SequencesListPage | Workflow instance list |
+| `/workspace/[id]/sequences/[id]` | SequenceDetailPage | Step timeline + logs |
 | `/workspace/[id]/bridge` | BridgePage | Command queue |
 | `/workspace/[id]/bridge/[id]` | BridgeCommandDetailPage | Command detail |
 | `/workspace/[id]/settings` | SettingsPage | Settings hub |
@@ -202,6 +215,10 @@ Supabase Tables          Dashboard Hooks           Components
 memories          ─────► useMemories()      ─────► MemoriesListPage
 commitments       ─────► useCommitments()   ─────► CommitmentsListPage
 operations        ─────► useOperations()    ─────► LedgerPage
+workflow_instances─────► useWorkflowInstances()──► SequencesListPage
+workflow_instances─────► useWorkflowInstance()───► SequenceDetailPage
+workflow_step_logs─────► useWorkflowStepLogs()──► StepLogViewer (realtime)
+workspaces+ops    ─────► usePanorama()      ─────► PanoramaPage
 bridge_commands   ─────► useBridgeCommands()─────► BridgePage
 bridge_machines   ─────► useBridgeMachines()─────► BridgePage
 webhook_logs      ─────► useWebhookLogs()   ─────► WebhookLogsPage

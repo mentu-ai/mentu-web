@@ -15,7 +15,7 @@ export function PlaneTabs() {
   // Execution plane links directly to kanban (no overview)
   const getPlaneHref = (plane: Plane) => {
     if (plane === 'execution') {
-      return `/workspace/${workspace}/execution/kanban`;
+      return `/workspace/${workspace}/commitments`;
     }
     return `/workspace/${workspace}/${plane}`;
   };

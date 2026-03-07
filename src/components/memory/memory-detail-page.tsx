@@ -65,10 +65,10 @@ export function MemoryDetailPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Back link */}
       <Link
-        href={`/workspace/${workspaceName}/execution/memories`}
+        href={`/workspace/${workspaceName}/memories`}
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -117,8 +117,8 @@ export function MemoryDetailPage({
                   key={ref}
                   href={
                     ref.startsWith('mem_')
-                      ? `/workspace/${workspaceName}/execution/memories/${ref}`
-                      : `/workspace/${workspaceName}/execution/commitments/${ref}`
+                      ? `/workspace/${workspaceName}/memories/${ref}`
+                      : `/workspace/${workspaceName}/commitments/${ref}`
                   }
                   className="text-sm font-mono hover:underline"
                 >
@@ -165,7 +165,7 @@ export function MemoryDetailPage({
             {commitmentsFromSource.map((cmt) => (
               <Link
                 key={cmt.id}
-                href={`/workspace/${workspaceName}/execution/commitments/${cmt.id}`}
+                href={`/workspace/${workspaceName}/commitments/${cmt.id}`}
                 className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
               >
                 <div className="flex items-center justify-between">
@@ -192,7 +192,7 @@ export function MemoryDetailPage({
             {commitmentsWithEvidence.map((cmt) => (
               <Link
                 key={cmt.id}
-                href={`/workspace/${workspaceName}/execution/commitments/${cmt.id}`}
+                href={`/workspace/${workspaceName}/commitments/${cmt.id}`}
                 className="block p-3 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
               >
                 <div className="flex items-center justify-between">

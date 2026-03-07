@@ -54,7 +54,7 @@ export function CommitmentsListPage({
   }, [commitments]);
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Commitments</h1>
@@ -87,7 +87,7 @@ export function CommitmentsListPage({
           {sortedCommitments.map((commitment) => (
             <Link
               key={commitment.id}
-              href={`/workspace/${workspaceName}/execution/commitments/${commitment.id}`}
+              href={`/workspace/${workspaceName}/commitments/${commitment.id}`}
               className="block"
             >
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">

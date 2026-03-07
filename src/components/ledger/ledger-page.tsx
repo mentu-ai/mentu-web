@@ -106,7 +106,7 @@ export function LedgerPage({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Ledger</h1>
@@ -145,11 +145,11 @@ export function LedgerPage({
       ) : (
         <div className="space-y-2">
           {sortedOperations.map((op) => {
-            const Icon = opIcons[op.op];
+            const Icon = opIcons[op.op] || Target;
             const link = op.op === 'capture'
-              ? `/workspace/${workspaceName}/execution/memories/${op.id}`
+              ? `/workspace/${workspaceName}/memories/${op.id}`
               : op.op === 'commit'
-              ? `/workspace/${workspaceName}/execution/commitments/${op.id}`
+              ? `/workspace/${workspaceName}/commitments/${op.id}`
               : '#';
 
             return (

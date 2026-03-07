@@ -75,10 +75,10 @@ export function CommitmentDetailPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Back link */}
       <Link
-        href={`/workspace/${workspaceName}/execution/commitments`}
+        href={`/workspace/${workspaceName}/commitments`}
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -150,7 +150,7 @@ export function CommitmentDetailPage({
         <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
           <p className="text-sm text-zinc-500 mb-1">Source Memory</p>
           <Link
-            href={`/workspace/${workspaceName}/execution/memories/${commitment.source}`}
+            href={`/workspace/${workspaceName}/memories/${commitment.source}`}
             className="text-sm font-mono hover:underline"
           >
             {commitment.source}
@@ -176,7 +176,7 @@ export function CommitmentDetailPage({
           <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
             <p className="text-sm text-zinc-500 mb-1">Evidence</p>
             <Link
-              href={`/workspace/${workspaceName}/execution/memories/${commitment.evidence}`}
+              href={`/workspace/${workspaceName}/memories/${commitment.evidence}`}
               className="text-sm font-mono hover:underline"
             >
               {commitment.evidence}

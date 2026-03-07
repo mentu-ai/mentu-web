@@ -63,7 +63,7 @@ export function MemoriesListPage({
   }, [filteredMemories]);
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Memories</h1>
@@ -117,7 +117,7 @@ export function MemoriesListPage({
           {sortedMemories.map((memory) => (
             <Link
               key={memory.id}
-              href={`/workspace/${workspaceName}/execution/memories/${memory.id}`}
+              href={`/workspace/${workspaceName}/memories/${memory.id}`}
               className="block"
             >
               <div className="bg-white border border-zinc-200 rounded-lg p-4 hover:border-zinc-300 transition-colors">

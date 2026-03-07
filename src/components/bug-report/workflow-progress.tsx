@@ -6,7 +6,7 @@ import { Check, Circle, Loader2, X, AlertTriangle } from "lucide-react";
 interface WorkflowStep {
   id: string;
   label: string;
-  state: "pending" | "running" | "completed" | "failed" | "skipped";
+  state: "pending" | "running" | "active" | "completed" | "failed" | "skipped";
 }
 
 const WORKFLOW_STEPS: { id: string; label: string }[] = [
@@ -66,6 +66,7 @@ function StepIcon({ step }: { step: WorkflowStep }) {
         </div>
       );
     case "running":
+    case "active":
       return (
         <div className="flex items-center gap-0.5" title={`${step.label}: Running`}>
           <Loader2 className={cn(iconClass, "text-blue-500 animate-spin")} />
@@ -111,7 +112,7 @@ export function WorkflowProgressExpanded({
           key={step.id}
           className={cn(
             "flex items-center gap-3 p-2 rounded-md",
-            step.state === "running" && "bg-blue-50 dark:bg-blue-950",
+            (step.state === "running" || step.state === "active") && "bg-blue-50 dark:bg-blue-950",
             step.state === "failed" && "bg-red-50 dark:bg-red-950"
           )}
         >

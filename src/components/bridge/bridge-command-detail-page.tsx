@@ -55,7 +55,7 @@ export function BridgeCommandDetailPage({
   const isRunning = command.status === 'running';
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Back link */}
       <Link
         href={`/workspace/${workspaceName}/capability/bridge`}
