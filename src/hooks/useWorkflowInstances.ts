@@ -25,7 +25,7 @@ export function useWorkflowInstances(workspaceId: string | undefined) {
         .map((r: Record<string, unknown>) => r.parent_commitment_id)
         .filter((id): id is string => !!id);
 
-      let scheduleMap = new Map<string, string>();
+      const scheduleMap = new Map<string, string>();
       if (parentIds.length > 0) {
         const { data: cmts } = await supabase
           .from('commitments')

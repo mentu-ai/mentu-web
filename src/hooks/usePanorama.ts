@@ -65,7 +65,7 @@ export function usePanorama() {
         .map(i => i.parent_commitment_id)
         .filter((id): id is string => !!id);
 
-      let commitmentSchedules = new Map<string, string>();
+      const commitmentSchedules = new Map<string, string>();
       if (parentCommitmentIds.length > 0) {
         const { data: cmts } = await supabase
           .from('commitments')
