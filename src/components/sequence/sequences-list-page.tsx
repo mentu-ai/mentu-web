@@ -48,6 +48,7 @@ export function SequencesListPage({ workspaceName, workspaceId }: SequencesListP
                 <th className="text-left px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">State</th>
                 <th className="text-left px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">Progress</th>
                 <th className="text-left px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">Started</th>
+                <th className="text-left px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">Scheduled</th>
                 <th className="text-left px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">Duration</th>
               </tr>
             </thead>
@@ -104,6 +105,9 @@ export function SequencesListPage({ workspaceName, workspaceId }: SequencesListP
                     </td>
                     <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                       {relativeTime(inst.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                      {inst.scheduled_start_at ? relativeTime(inst.scheduled_start_at) : '—'}
                     </td>
                     <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                       {getDuration(inst.created_at, inst.updated_at)}

@@ -351,6 +351,7 @@ export interface PanoramaSequence {
   completed_steps: number;
   current_step?: string;
   started_at: string;
+  scheduled_start_at?: string;
 }
 
 export interface WorkflowStepLog {

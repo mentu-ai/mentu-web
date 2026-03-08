@@ -60,7 +60,24 @@ export function usePanorama() {
         workflows: { name: string; workspace_id: string } | null;
       })[];
 
-      // 4. Group operations by workspace and compute stats
+      // 4. Fetch scheduled_start_at from parent commitments
+      const parentCommitmentIds = instances
+        .map(i => i.parent_commitment_id)
+        .filter((id): id is string => !!id);
+
+      let commitmentSchedules = new Map<string, string>();
+      if (parentCommitmentIds.length > 0) {
+        const { data: cmts } = await supabase
+          .from('commitments')
+          .select('id, scheduled_start_at')
+          .in('id', parentCommitmentIds)
+          .not('scheduled_start_at', 'is', null);
+        for (const c of (cmts || []) as { id: string; scheduled_start_at: string }[]) {
+          commitmentSchedules.set(c.id, c.scheduled_start_at);
+        }
+      }
+
+      // 5. Group operations by workspace and compute stats
       const opsByWorkspace = new Map<string, OperationRow[]>();
       for (const op of allOps) {
         if (!opsByWorkspace.has(op.workspace_id)) {
@@ -88,6 +105,9 @@ export function usePanorama() {
           completed_steps: stepKeys.filter(k => steps[k].state === "completed").length,
           current_step: inst.current_step,
           started_at: inst.created_at,
+          scheduled_start_at: inst.parent_commitment_id
+            ? commitmentSchedules.get(inst.parent_commitment_id)
+            : undefined,
         };
 
         if (!instancesByWorkspace.has(wsId)) {

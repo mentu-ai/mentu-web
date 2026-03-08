@@ -20,10 +20,30 @@ export function useWorkflowInstances(workspaceId: string | undefined) {
 
       if (error) throw error;
 
+      // Fetch scheduled_start_at from parent commitments
+      const parentIds = (data || [])
+        .map((r: Record<string, unknown>) => r.parent_commitment_id)
+        .filter((id): id is string => !!id);
+
+      let scheduleMap = new Map<string, string>();
+      if (parentIds.length > 0) {
+        const { data: cmts } = await supabase
+          .from('commitments')
+          .select('id, scheduled_start_at')
+          .in('id', parentIds)
+          .not('scheduled_start_at', 'is', null);
+        for (const c of (cmts || []) as { id: string; scheduled_start_at: string }[]) {
+          scheduleMap.set(c.id, c.scheduled_start_at);
+        }
+      }
+
       return (data || []).map((row: Record<string, unknown>) => ({
         ...row,
         workflow_name: (row.workflows as { name: string } | null)?.name ?? "Unknown",
-      })) as (WorkflowInstance & { workflow_name: string })[];
+        scheduled_start_at: row.parent_commitment_id
+          ? scheduleMap.get(row.parent_commitment_id as string)
+          : undefined,
+      })) as (WorkflowInstance & { workflow_name: string; scheduled_start_at?: string })[];
     },
     enabled: !!workspaceId,
   });
